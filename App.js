@@ -2062,8 +2062,8 @@ export default function App() {
               <>
                 <View style={styles.roleSwitcher}>
                   {[
-                    { key: 'worker', label: 'Я работник', icon: 'person' },
-                    { key: 'employer', label: 'Я работодатель', icon: 'briefcase' },
+                    { key: 'worker', label: 'Работник', icon: 'person' },
+                    { key: 'employer', label: 'Работодатель', icon: 'briefcase' },
                   ].map((role) => (
                     <TouchableOpacity
                       key={role.key}
