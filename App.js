@@ -21,14 +21,14 @@ import Slider from '@react-native-community/slider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as WebBrowser from 'expo-web-browser';
-import { useAuthRequest as useGoogleAuthRequest } from 'expo-auth-session/providers/google';
+// import { useAuthRequest as useGoogleAuthRequest } from 'expo-auth-session/providers/google';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProfileQuery, useUpdateProfile, useDocumentStatusesQuery } from './hooks/useProfile';
 import { initSyncService } from './services/syncService';
 import { initWebSocketService } from './services/websocketService';
 import { migrateCache } from './services/cacheService';
 
-WebBrowser.maybeCompleteAuthSession();
+// WebBrowser.maybeCompleteAuthSession();
 
 const theme = {
   primary: '#C62828',
@@ -622,43 +622,43 @@ const useProfileStore = ({ initialProfile, saveProfileRequest }) => {
   };
 };
 
-const googleProfileEndpoint = 'https://www.googleapis.com/oauth2/v3/userinfo';
+// const googleProfileEndpoint = 'https://www.googleapis.com/oauth2/v3/userinfo';
 
-const fetchGoogleProfile = async (token) => {
-  try {
-    const response = await fetch(googleProfileEndpoint, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+// const fetchGoogleProfile = async (token) => {
+//   try {
+//     const response = await fetch(googleProfileEndpoint, {
+//       headers: { Authorization: `Bearer ${token}` },
+//     });
 
-    if (!response.ok) {
-      throw new Error('profile_request_failed');
-    }
+//     if (!response.ok) {
+//       throw new Error('profile_request_failed');
+//     }
 
-    return response.json();
-  } catch (error) {
-    console.warn(
-      'Не удалось получить профиль Google',
-      error?.message || error
-    );
-    throw error;
-  }
-};
+//     return response.json();
+//   } catch (error) {
+//     console.warn(
+//       'Не удалось получить профиль Google',
+//       error?.message || error
+//     );
+//     throw error;
+//   }
+// };
 
-const resolveGoogleAuthConfig = () => {
-  const extra =
-    Constants?.expoConfig?.extra?.googleAuth ??
-    Constants?.manifest2?.extra?.googleAuth ??
-    {};
+// const resolveGoogleAuthConfig = () => {
+//   const extra =
+//     Constants?.expoConfig?.extra?.googleAuth ??
+//     Constants?.manifest2?.extra?.googleAuth ??
+//     {};
 
-  return {
-    expoClientId: extra.expoClientId ?? 'GOOGLE_EXPO_CLIENT_ID',
-    iosClientId: extra.iosClientId ?? extra.clientId ?? 'GOOGLE_IOS_CLIENT_ID',
-    androidClientId: extra.androidClientId ?? 'GOOGLE_ANDROID_CLIENT_ID',
-    webClientId: extra.webClientId ?? extra.clientId ?? 'GOOGLE_WEB_CLIENT_ID',
-  };
-};
+//   return {
+//     expoClientId: extra.expoClientId ?? 'GOOGLE_EXPO_CLIENT_ID',
+//     iosClientId: extra.iosClientId ?? extra.clientId ?? 'GOOGLE_IOS_CLIENT_ID',
+//     androidClientId: extra.androidClientId ?? 'GOOGLE_ANDROID_CLIENT_ID',
+//     webClientId: extra.webClientId ?? extra.clientId ?? 'GOOGLE_WEB_CLIENT_ID',
+//   };
+// };
 
-const googleAuthConfig = resolveGoogleAuthConfig();
+// const googleAuthConfig = resolveGoogleAuthConfig();
 
 const API_ENDPOINTS = {
   verify: 'https://api.workmatch.dev/verify',
@@ -991,14 +991,14 @@ export default function App() {
     phone: false,
   });
   const [token, setToken] = useState(null);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  // const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { width } = useWindowDimensions();
   const isCompact = width < 390;
   const { email, phone, password, confirmPassword, workerSkill, employerCompany } =
     authForm;
-  const [googleRequest, googleResponse, promptGoogleAuth] = useGoogleAuthRequest(
-    googleAuthConfig
-  );
+  // const [googleRequest, googleResponse, promptGoogleAuth] = useGoogleAuthRequest(
+  //   googleAuthConfig
+  // );
 
   const queryClientInstance = useQueryClient();
 
@@ -1365,84 +1365,84 @@ export default function App() {
     workerSkill,
   ]);
 
-  const handleGoogleResponse = useCallback(
-    async (googleAuth) => {
-      const accessToken = googleAuth?.accessToken ?? googleAuth?.idToken ?? null;
+  // const handleGoogleResponse = useCallback(
+  //   async (googleAuth) => {
+  //     const accessToken = googleAuth?.accessToken ?? googleAuth?.idToken ?? null;
 
-      if (!accessToken) {
-        Alert.alert('Ошибка Google', 'Не удалось получить токен авторизации.');
-        return;
-      }
+  //     if (!accessToken) {
+  //       Alert.alert('Ошибка Google', 'Не удалось получить токен авторизации.');
+  //       return;
+  //     }
 
-      try {
-        const profile = await fetchGoogleProfile(accessToken);
-        await submitAuthPayload({
-          mode: 'login',
-          provider: 'google',
-          email: profile?.email ?? email.trim(),
-          googleId: profile?.sub,
-          displayName: profile?.name,
-          avatar: profile?.picture,
-        });
-        await completeAuth({
-          role: authRole,
-          token: `google-${profile?.sub ?? accessToken}`,
-        });
-        Alert.alert('Готово', 'Вход через Google выполнен.');
-      } catch (error) {
-        Alert.alert('Ошибка Google', 'Не удалось завершить вход через Google.');
-      }
-    },
-    [authRole, completeAuth, email, submitAuthPayload]
-  );
+  //     try {
+  //       const profile = await fetchGoogleProfile(accessToken);
+  //       await submitAuthPayload({
+  //         mode: 'login',
+  //         provider: 'google',
+  //         email: profile?.email ?? email.trim(),
+  //         googleId: profile?.sub,
+  //         displayName: profile?.name,
+  //         avatar: profile?.picture,
+  //       });
+  //       await completeAuth({
+  //         role: authRole,
+  //         token: `google-${profile?.sub ?? accessToken}`,
+  //       });
+  //       Alert.alert('Готово', 'Вход через Google выполнен.');
+  //     } catch (error) {
+  //       Alert.alert('Ошибка Google', 'Не удалось завершить вход через Google.');
+  //     }
+  //   },
+  //   [authRole, completeAuth, email, submitAuthPayload]
+  // );
 
-  useEffect(() => {
-    if (!googleResponse) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!googleResponse) {
+  //     return;
+  //   }
 
-    const processGoogleResponse = async () => {
-      try {
-        if (googleResponse.type === 'success') {
-          await handleGoogleResponse(googleResponse.authentication);
-        } else if (googleResponse.type === 'error') {
-          Alert.alert(
-            'Ошибка Google',
-            googleResponse.error?.message ??
-            'Не удалось авторизоваться через Google.'
-          );
-        }
-      } finally {
-        setIsGoogleLoading(false);
-      }
-    };
+  //   const processGoogleResponse = async () => {
+  //     try {
+  //       if (googleResponse.type === 'success') {
+  //         await handleGoogleResponse(googleResponse.authentication);
+  //       } else if (googleResponse.type === 'error') {
+  //         Alert.alert(
+  //           'Ошибка Google',
+  //           googleResponse.error?.message ??
+  //           'Не удалось авторизоваться через Google.'
+  //         );
+  //       }
+  //     } finally {
+  //       setIsGoogleLoading(false);
+  //     }
+  //   };
 
-    processGoogleResponse();
-  }, [googleResponse, handleGoogleResponse]);
+  //   processGoogleResponse();
+  // }, [googleResponse, handleGoogleResponse]);
 
-  const handleGoogleSignIn = useCallback(async () => {
-    if (!googleRequest) {
-      Alert.alert(
-        'Google недоступен',
-        'Пожалуйста, попробуйте ещё раз через минуту.'
-      );
-      return;
-    }
+  // const handleGoogleSignIn = useCallback(async () => {
+  //   if (!googleRequest) {
+  //     Alert.alert(
+  //       'Google недоступен',
+  //       'Пожалуйста, попробуйте ещё раз через минуту.'
+  //     );
+  //     return;
+  //   }
 
-    setIsGoogleLoading(true);
-    try {
-      await promptGoogleAuth({
-        useProxy: Platform.OS !== 'web',
-        showInRecents: true,
-      });
-    } catch (error) {
-      setIsGoogleLoading(false);
-      Alert.alert(
-        'Ошибка Google',
-        'Не удалось открыть окно авторизации. Попробуйте снова.'
-      );
-    }
-  }, [googleRequest, promptGoogleAuth]);
+  //   setIsGoogleLoading(true);
+  //   try {
+  //     await promptGoogleAuth({
+  //       useProxy: Platform.OS !== 'web',
+  //       showInRecents: true,
+  //     });
+  //   } catch (error) {
+  //     setIsGoogleLoading(false);
+  //     Alert.alert(
+  //       'Ошибка Google',
+  //       'Не удалось открыть окно авторизации. Попробуйте снова.'
+  //     );
+  //   }
+  // }, [googleRequest, promptGoogleAuth]);
 
   const handleGuestAccess = useCallback(async () => {
     try {
@@ -2241,7 +2241,7 @@ export default function App() {
             >
               <Text style={styles.authPrimaryText}>{primaryLabel}</Text>
             </TouchableOpacity>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={[
                 styles.googleButton,
                 (!googleRequest || isGoogleLoading) && styles.googleButtonDisabled,
@@ -2257,7 +2257,7 @@ export default function App() {
                   <Text style={styles.googleButtonText}>Войти через Google</Text>
                 </>
               )}
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             <View style={styles.authLinksRow}>
               {authMode !== 'login' && (
                 <TouchableOpacity onPress={() => setAuthMode('login')}>
@@ -4469,23 +4469,23 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
   },
-  googleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: theme.primary,
-  },
-  googleButtonDisabled: {
-    opacity: 0.5,
-  },
-  googleButtonText: {
-    color: theme.primary,
-    fontWeight: '600',
-  },
+  // googleButton: {
+  //   flexDirection: 'row',
+  //   alignItems: 'center',
+  //   justifyContent: 'center',
+  //   gap: 8,
+  //   paddingVertical: 12,
+  //   borderRadius: 14,
+  //   borderWidth: 1,
+  //   borderColor: theme.primary,
+  // },
+  // googleButtonDisabled: {
+  //   opacity: 0.5,
+  // },
+  // googleButtonText: {
+  //   color: theme.primary,
+  //   fontWeight: '600',
+  // },
   authLinksRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
