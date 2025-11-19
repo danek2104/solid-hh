@@ -21,7 +21,7 @@ import Slider from '@react-native-community/slider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as WebBrowser from 'expo-web-browser';
-import { useAuthRequest } from 'expo-auth-session/providers/google';
+import { useAuthRequest as useGoogleAuthRequest } from 'expo-auth-session/providers/google';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProfileQuery, useUpdateProfile, useDocumentStatusesQuery } from './hooks/useProfile';
 import { initSyncService } from './services/syncService';
@@ -996,7 +996,7 @@ export default function App() {
   const isCompact = width < 390;
   const { email, phone, password, confirmPassword, workerSkill, employerCompany } =
     authForm;
-  const [googleRequest, googleResponse, promptGoogleAuth] = useAuthRequest(
+  const [googleRequest, googleResponse, promptGoogleAuth] = useGoogleAuthRequest(
     googleAuthConfig
   );
 
