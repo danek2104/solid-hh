@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchProfile, updateProfile } from '../services/profileApi';
 import { cacheProfile, getCachedProfile } from '../services/cacheService';
+import { getErrorMessage, NetworkError, TimeoutError } from '../utils/errorHandler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PROFILE_DRAFT_KEY = '@profile_draft';
@@ -14,20 +15,55 @@ export const useProfileQuery = (token, options = {}) => {
   return useQuery({
     queryKey: ['profile', token],
     queryFn: async () => {
-      // Сначала попытаться получить из кеша
+      // Сначала попытаться получить из кеша (без проверки возраста для использования при ошибках)
       const cached = await getCachedProfile(options?.staleTime);
-      if (cached) {
-        // Вернуть кеш и обновить в фоне
-        queryClient.setQueryData(['profile', token], cached);
+      
+      try {
+        // Загрузить свежие данные
+        const profile = await fetchProfile(token);
+        
+        // Сохранить в кеш
+        await cacheProfile(profile);
+        
+        return profile;
+      } catch (error) {
+        // Если ошибка сети или таймаут, и есть кеш - используем кеш
+        const isNetworkOrTimeoutError = 
+          error instanceof NetworkError || 
+          error instanceof TimeoutError ||
+          (error && typeof error === 'object' && (
+            error.name === 'NetworkError' || 
+            error.name === 'TimeoutError' ||
+            (error.message && (
+              error.message.toLowerCase().includes('networkerror') ||
+              error.message.toLowerCase().includes('network error') ||
+              error.message.toLowerCase().includes('timeout') ||
+              error.message.toLowerCase().includes('failed to fetch')
+            ))
+          ));
+        
+        if (isNetworkOrTimeoutError && cached) {
+          // При ошибке сети используем кеш вместо выброса ошибки
+          console.warn('Ошибка сети при загрузке профиля, используем кеш', error);
+          // Обновляем кеш в react-query
+          queryClient.setQueryData(['profile', token], cached);
+          return cached;
+        }
+        
+        // Для других ошибок выбрасываем исключение
+        // Улучшаем обработку ошибок - гарантируем, что ошибка имеет понятное сообщение
+        const errorMessage = getErrorMessage(error);
+        const enhancedError = error?.message 
+          ? error 
+          : new Error(errorMessage || 'Не удалось загрузить профиль. Попробуйте ещё раз.');
+        
+        // Сохраняем оригинальные поля ошибки
+        if (error && typeof error === 'object') {
+          Object.assign(enhancedError, error);
+        }
+        
+        throw enhancedError;
       }
-
-      // Загрузить свежие данные
-      const profile = await fetchProfile(token);
-      
-      // Сохранить в кеш
-      await cacheProfile(profile);
-      
-      return profile;
     },
     enabled: options?.enabled !== false,
     staleTime: options?.staleTime ?? 5 * 60 * 1000, // 5 минут по умолчанию

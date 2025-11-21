@@ -1,6 +1,7 @@
 import { AppState } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { fetchProfile, fetchDocumentStatuses } from './profileApi';
+import { fetchShifts } from './shiftsApi';
 import { cacheProfile, getCachedProfile, cacheDocumentStatuses } from './cacheService';
 
 class SyncService {
@@ -99,6 +100,9 @@ class SyncService {
       // Синхронизация статусов документов
       await this.syncDocumentStatuses();
 
+      // Синхронизация смен
+      await this.syncShifts();
+
       this.syncCallbacks.onSyncComplete?.();
     } catch (error) {
       console.error('Ошибка при синхронизации', error);
@@ -137,6 +141,8 @@ class SyncService {
       if (cachedProfile) {
         this.queryClient.setQueryData(['profile'], cachedProfile);
       }
+      // Пробрасываем ошибку дальше, чтобы она была обработана в sync()
+      throw error;
     }
   };
 
@@ -151,6 +157,44 @@ class SyncService {
       this.queryClient.invalidateQueries({ queryKey: ['documentStatuses'] });
     } catch (error) {
       console.warn('Не удалось синхронизировать статусы документов', error);
+    }
+  };
+
+  /**
+   * Синхронизировать смены
+   */
+  syncShifts = async () => {
+    try {
+      // Вычисляем даты для текущей недели
+      const today = new Date();
+      const currentDay = today.getDay();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - (currentDay === 0 ? 6 : currentDay - 1));
+      
+      const weekDates = [];
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + i);
+        weekDates.push(date.toISOString().split('T')[0]);
+      }
+
+      const shifts = await fetchShifts({
+        startDate: weekDates[0],
+        endDate: weekDates[6],
+        page: 1,
+        limit: 100,
+      }, this.token);
+
+      // Обновить react-query
+      this.queryClient.setQueryData(['shifts', {
+        startDate: weekDates[0],
+        endDate: weekDates[6],
+        page: 1,
+        limit: 100,
+      }, this.token], shifts);
+      this.queryClient.invalidateQueries({ queryKey: ['shifts'] });
+    } catch (error) {
+      console.warn('Не удалось синхронизировать смены', error);
     }
   };
 

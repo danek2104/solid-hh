@@ -191,3 +191,80 @@ export const getCachedDocumentStatuses = async (maxAge) => {
   }
 };
 
+/**
+ * Сохранить историю сообщений чата в кеш
+ */
+export const cacheChatMessages = async (chatId, messages) => {
+  try {
+    const cacheKey = `@cache_chat_messages_${chatId}`;
+    const cacheData = {
+      data: messages,
+      timestamp: Date.now(),
+      version: CURRENT_CACHE_VERSION,
+      chatId: chatId,
+    };
+    await AsyncStorage.setItem(cacheKey, JSON.stringify(cacheData));
+  } catch (error) {
+    console.warn('Не удалось сохранить сообщения чата в кеш', error);
+  }
+};
+
+/**
+ * Получить историю сообщений чата из кеша
+ */
+export const getCachedChatMessages = async (chatId, maxAge) => {
+  try {
+    const cacheKey = `@cache_chat_messages_${chatId}`;
+    const cached = await AsyncStorage.getItem(cacheKey);
+    
+    if (!cached) {
+      return null;
+    }
+
+    const cacheData = JSON.parse(cached);
+    
+    // Проверяем, что это сообщения для правильного чата
+    if (cacheData.chatId !== chatId) {
+      return null;
+    }
+
+    const age = Date.now() - cacheData.timestamp;
+
+    if (maxAge && age > maxAge) {
+      return null;
+    }
+
+    return cacheData.data;
+  } catch (error) {
+    console.warn('Не удалось получить сообщения чата из кеша', error);
+    return null;
+  }
+};
+
+/**
+ * Очистить кеш сообщений чата
+ */
+export const clearChatMessagesCache = async (chatId) => {
+  try {
+    const cacheKey = `@cache_chat_messages_${chatId}`;
+    await AsyncStorage.removeItem(cacheKey);
+  } catch (error) {
+    console.warn('Не удалось очистить кеш сообщений чата', error);
+  }
+};
+
+/**
+ * Очистить кеш всех сообщений чатов
+ */
+export const clearAllChatMessagesCache = async () => {
+  try {
+    const allKeys = await AsyncStorage.getAllKeys();
+    const chatKeys = allKeys.filter(key => key.startsWith('@cache_chat_messages_'));
+    if (chatKeys.length > 0) {
+      await AsyncStorage.multiRemove(chatKeys);
+    }
+  } catch (error) {
+    console.warn('Не удалось очистить кеш всех сообщений чатов', error);
+  }
+};
+

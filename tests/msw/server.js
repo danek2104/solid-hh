@@ -1,4 +1,4 @@
-const { setupServer } = require('msw/native');
+const { setupServer } = require('msw/node');
 const { handlers } = require('./handlers');
 
 const server = setupServer(...handlers);
