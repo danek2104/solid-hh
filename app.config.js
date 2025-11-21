@@ -8,9 +8,17 @@
  * Для локальной разработки создайте .env файл в корне проекта
  * с переменными вида EXPO_PUBLIC_API_URL=...
  * 
- * Примечание: dotenv не используется, так как он требует Node.js модули,
- * которые недоступны в React Native окружении.
+ * Примечание: dotenv используется только в app.config.js, так как
+ * этот файл выполняется в Node.js окружении во время сборки.
  */
+
+// Загружаем переменные окружения из .env файла (только для app.config.js)
+try {
+  require('dotenv').config();
+} catch (e) {
+  // dotenv не установлен, продолжаем без него
+  // Переменные окружения можно задать напрямую через process.env
+}
 
 // Определяем окружение (development, staging, production)
 const ENV = process.env.APP_ENV || process.env.NODE_ENV || 'development';

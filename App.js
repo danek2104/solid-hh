@@ -3210,7 +3210,7 @@ export default function App() {
                     <View style={styles.jobDetailSection}>
                       <Text style={styles.jobDetailSectionTitle}>Навыки</Text>
                       <View style={styles.tagsRow}>
-                        {jobDetails.skills.map((skill, index) => (
+                        {Array.isArray(jobDetails.skills) && jobDetails.skills.map((skill, index) => (
                           <Tag
                             key={index}
                             label={typeof skill === 'string' ? (skill && skill !== '.' ? skill : '') : (skill.name && skill.name !== '.' ? skill.name : '')}
@@ -3383,7 +3383,7 @@ export default function App() {
                       })
                       : (chat.time && chat.time.trim() ? chat.time : null)}
                     unread={chat.unreadCount || chat.unread || 0}
-                    status={chat.status && chat.status.trim() ? chat.status : null}
+                    status={chat.status && chat.status.trim() && chat.status.trim() !== '.' ? chat.status : null}
                   />
                 </TouchableOpacity>
               )}
@@ -5077,14 +5077,14 @@ const WorkerCard = memo(({
     </Text>
     <Text style={styles.workerAvailability}>{availability}</Text>
     <View style={styles.badgeRow}>
-      {badges.map((badge) => (
+      {Array.isArray(badges) && badges.map((badge) => (
         <View key={badge} style={styles.badgePill}>
           <Text style={styles.badgePillText}>{badge}</Text>
         </View>
       ))}
     </View>
     <Text style={styles.workerSkills}>
-      Навыки: {skills.join(', ')}
+      Навыки: {Array.isArray(skills) ? skills.join(', ') : ''}
     </Text>
     <TouchableOpacity style={styles.workerButton}>
       <Text style={styles.workerButtonText}>Пригласить</Text>
@@ -5149,7 +5149,7 @@ const ChatCard = memo(({ name, snippet, time, unread, status, compact }) => (
         {time ? <Text style={styles.chatTime}>{time}</Text> : null}
       </View>
       {snippet ? <Text style={styles.chatSnippet}>{snippet}</Text> : null}
-      {status && status.trim() ? <Text style={styles.chatStatus}>{status}</Text> : null}
+      {status && status.trim() && status.trim() !== '.' ? <Text style={styles.chatStatus}>{status}</Text> : null}
     </View>
     {unread > 0 && (
       <View style={styles.chatUnread}>
