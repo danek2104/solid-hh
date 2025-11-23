@@ -235,10 +235,13 @@ export const useProfileStore = ({ initialProfile, saveProfileRequest }) => {
         dispatch({ type: 'save_start', payload });
 
         try {
+            console.log('Saving profile payload:', payload);
             await saveProfileRequest(payload);
+            console.log('Profile saved successfully');
             dispatch({ type: 'save_success', timestamp: Date.now() });
             await AsyncStorage.removeItem(PROFILE_DRAFT_KEY);
         } catch (error) {
+            console.error('Save profile error:', error);
             dispatch({
                 type: 'save_failure',
                 error: error?.message || 'Failed to save profile',

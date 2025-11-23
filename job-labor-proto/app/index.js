@@ -47,7 +47,7 @@ export default function Index() {
     ];
 
     if (isAuthenticated) {
-        return <Redirect href="/profile" />;
+        return <Redirect href="/tabs/profile" />;
     }
 
     return (

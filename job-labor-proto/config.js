@@ -12,7 +12,7 @@ const getConfig = () => {
   return {
     apiUrl: extra.apiUrl || 'https://api.workmatch.dev',
     wsUrl: extra.wsUrl || 'wss://api.workmatch.dev/ws',
-    apiTimeout: extra.apiTimeout || 1200,
+    apiTimeout: extra.apiTimeout || 5000,
     env: extra.env || 'development',
   };
 };

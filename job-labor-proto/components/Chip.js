@@ -1,27 +1,35 @@
-import React, { memo } from 'react';
-import { TouchableOpacity, Text } from 'react-native';
-import { styles } from '../AppStyles';
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { theme } from '../AppStyles';
 
-const Chip = memo(({ label, onPress, variant = 'solid' }) => (
-  <TouchableOpacity
-    onPress={onPress}
-    activeOpacity={0.8}
-    style={[
-      styles.chip,
-      variant === 'outline' && styles.chipOutline,
-    ]}
-  >
-    <Text
-      style={[
-        styles.chipText,
-        variant === 'outline' && styles.chipTextOutline,
-      ]}
-    >
-      {label}
-    </Text>
-  </TouchableOpacity>
-));
+const Chip = ({ label, outline }) => {
+  return (
+    <View style={[styles.chip, outline && styles.chipOutline]}>
+      <Text style={[styles.chipText, outline && styles.chipTextOutline]}>{label}</Text>
+    </View>
+  );
+};
 
-Chip.displayName = 'Chip';
+const styles = StyleSheet.create({
+  chip: {
+    backgroundColor: theme.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: theme.primary,
+  },
+  chipOutline: {
+    backgroundColor: 'transparent',
+  },
+  chipText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  chipTextOutline: {
+    color: theme.primary,
+  },
+});
 
 export default Chip;

@@ -5,15 +5,34 @@ exports.getJobs = async (req, res) => {
     const page = parseInt(req.query.page || '1');
     const limit = parseInt(req.query.limit || '10');
     const search = req.query.search || '';
+    const location = req.query.location || '';
+    const skill = req.query.skill || '';
     
     const skip = (page - 1) * limit;
 
-    const where = search ? {
-        OR: [
-            { title: { contains: search, mode: 'insensitive' } },
-            { description: { contains: search, mode: 'insensitive' } }
-        ]
-    } : {};
+    const where = {
+        AND: []
+    };
+
+    if (search) {
+        where.AND.push({
+            OR: [
+                { title: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } }
+            ]
+        });
+    }
+
+    if (location) {
+        where.AND.push({ location: { contains: location, mode: 'insensitive' } });
+    }
+
+    if (skill) {
+        where.AND.push({ skill: { contains: skill, mode: 'insensitive' } });
+    }
+
+    // Clean up empty AND array if no filters
+    if (where.AND.length === 0) delete where.AND;
 
     const [jobs, total] = await prisma.$transaction([
         prisma.job.findMany({

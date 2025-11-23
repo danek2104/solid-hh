@@ -21,12 +21,12 @@ export const setTokenExpiredHandler = (callback) => {
  * Выполнить запрос с автоматическим обновлением токена при необходимости
  */
 const requestWithTokenRefresh = async (requestFn, token) => {
-  let validToken = token;
-  if (token) {
-    validToken = await getValidToken();
-    if (!validToken && token) {
-      validToken = null;
-    }
+  // Always try to get a fresh valid token from storage first
+  let validToken = await getValidToken();
+  
+  // If storage failed/empty but we have a passed token, use it as fallback
+  if (!validToken && token) {
+    validToken = token;
   }
 
   try {

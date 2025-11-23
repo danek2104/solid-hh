@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, FlatList, TextInput, Modal, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, FlatList, TextInput, Modal, ScrollView, SafeAreaView, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { styles, theme } from '../AppStyles';
 import Section from '../components/Section';
@@ -20,7 +20,7 @@ const JobsScreen = ({
     getApplicationStatusLabel,
     jobSearchQuery,
     setJobSearchQuery,
-    jobFilterTags,
+    onClearFilters,
     jobFilters,
     handleJobFilterChange,
     isJobsLoading,
@@ -37,6 +37,7 @@ const JobsScreen = ({
     handleJobApply,
 }) => (
     <>
+        {/* ... view toggle ... */}
         <View style={styles.viewToggleContainer}>
             <TouchableOpacity
                 style={[
@@ -74,6 +75,7 @@ const JobsScreen = ({
 
         {applicationsView ? (
             <Section title="Мои отклики" compact={isCompact}>
+                {/* ... applications content ... */}
                 {isApplicationsLoading ? (
                     <View style={styles.loadingContainer}>
                         <ActivityIndicator size="large" color={theme.primary} />
@@ -134,6 +136,41 @@ const JobsScreen = ({
                             {application.message && (
                                 <Text style={styles.applicationMessage}>{application.message}</Text>
                             )}
+
+                            {/* Documents Section */}
+                            <View style={styles.documentsSection}>
+                                <Text style={styles.documentsTitle}>Необходимые документы:</Text>
+                                
+                                <View style={styles.docGroup}>
+                                    <Text style={styles.docGroupTitle}>✅ Готовы (Распечатать и взять с собой)</Text>
+                                    {['Трудовой договор №123', 'Пропуск на объект'].map((doc, idx) => (
+                                        <TouchableOpacity 
+                                            key={idx} 
+                                            style={styles.docItem}
+                                            onPress={() => Linking.openURL('https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf')}
+                                        >
+                                            <Ionicons name="print-outline" size={18} color={theme.primary} />
+                                            <Text style={styles.docText}>{doc}</Text>
+                                            <Ionicons name="download-outline" size={16} color={theme.muted} />
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+
+                                <View style={styles.docGroup}>
+                                    <Text style={styles.docGroupTitle}>📝 Заполнить и распечатать</Text>
+                                    {['Анкета по ТБ', 'Лист учета времени'].map((doc, idx) => (
+                                        <TouchableOpacity 
+                                            key={idx} 
+                                            style={styles.docItem}
+                                            onPress={() => Linking.openURL('https://www.africau.edu/images/default/sample.pdf')}
+                                        >
+                                            <Ionicons name="create-outline" size={18} color={theme.accent} />
+                                            <Text style={styles.docText}>{doc}</Text>
+                                            <Ionicons name="download-outline" size={16} color={theme.muted} />
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
                         </View>
                     ))
                 )}
@@ -162,11 +199,6 @@ const JobsScreen = ({
                 </Section>
 
                 <Section title="Фильтры" compact={isCompact}>
-                    <View style={[styles.chipsRow, isCompact && styles.chipsRowCompact]}>
-                        {jobFilterTags.map((filter) => (
-                            <Chip key={filter} label={filter} />
-                        ))}
-                    </View>
                     <View style={styles.filterRow}>
                         <View style={styles.filterInputContainer}>
                             <Ionicons name="location-outline" size={18} color={theme.muted} style={styles.filterInputIcon} />
@@ -189,30 +221,13 @@ const JobsScreen = ({
                             />
                         </View>
                     </View>
-                    <View style={styles.filterRow}>
-                        <View style={styles.filterInputContainer}>
-                            <Ionicons name="cash-outline" size={18} color={theme.muted} style={styles.filterInputIcon} />
-                            <TextInput
-                                style={styles.filterInput}
-                                placeholder="Мин. зарплата"
-                                placeholderTextColor={theme.muted}
-                                value={jobFilters.minSalary}
-                                onChangeText={(value) => handleJobFilterChange('minSalary', value)}
-                                keyboardType="numeric"
-                            />
-                        </View>
-                        <View style={styles.filterInputContainer}>
-                            <Ionicons name="cash-outline" size={18} color={theme.muted} style={styles.filterInputIcon} />
-                            <TextInput
-                                style={styles.filterInput}
-                                placeholder="Макс. зарплата"
-                                placeholderTextColor={theme.muted}
-                                value={jobFilters.maxSalary}
-                                onChangeText={(value) => handleJobFilterChange('maxSalary', value)}
-                                keyboardType="numeric"
-                            />
-                        </View>
-                    </View>
+                    
+                    <TouchableOpacity 
+                        style={styles.secondaryButton}
+                        onPress={onClearFilters}
+                    >
+                        <Text style={styles.secondaryButtonText}>Сбросить все фильтры</Text>
+                    </TouchableOpacity>
                 </Section>
 
                 <Section title="Свободные вакансии" compact={isCompact}>

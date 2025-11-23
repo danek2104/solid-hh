@@ -55,11 +55,10 @@ const ChatsScreen = ({
                     <Text style={styles.emptyText}>У вас пока нет чатов</Text>
                 </View>
             ) : (
-                <FlatList
-                    data={chats}
-                    keyExtractor={(item) => String(item.id || item._id)}
-                    renderItem={({ item: chat }) => (
+                <View>
+                    {chats.map((chat) => (
                         <TouchableOpacity
+                            key={String(chat.id || chat._id)}
                             onPress={() => handleOpenChat(chat.id || chat._id)}
                             activeOpacity={0.7}
                         >
@@ -77,13 +76,8 @@ const ChatsScreen = ({
                                 status={chat.status && chat.status.trim() && chat.status.trim() !== '.' ? chat.status : null}
                             />
                         </TouchableOpacity>
-                    )}
-                    scrollEnabled={false}
-                    removeClippedSubviews={true}
-                    initialNumToRender={10}
-                    maxToRenderPerBatch={10}
-                    windowSize={5}
-                />
+                    ))}
+                </View>
             )}
         </Section>
 
@@ -122,15 +116,8 @@ const ChatsScreen = ({
                         </View>
                     </View>
 
-                    <ScrollView
-                        ref={chatScrollViewRef}
+                    <View
                         style={styles.chatMessages}
-                        contentContainerStyle={styles.chatMessagesContent}
-                        onContentSizeChange={() => {
-                            if (chatScrollViewRef.current) {
-                                chatScrollViewRef.current.scrollToEnd({ animated: true });
-                            }
-                        }}
                     >
                         {isMessagesLoading ? (
                             <View style={styles.loadingContainer}>
@@ -149,37 +136,38 @@ const ChatsScreen = ({
                                     <Text style={styles.retryButtonText}>Повторить</Text>
                                 </TouchableOpacity>
                             </View>
-                        ) : (() => {
-                            if (sortedMessages.length === 0) {
-                                return (
-                                    <View style={styles.emptyContainer}>
-                                        <Ionicons name="chatbubble-outline" size={48} color={theme.muted} />
-                                        <Text style={styles.emptyText}>Начните разговор</Text>
-                                    </View>
-                                );
-                            }
-
-                            return (
-                                <FlatList
-                                    data={sortedMessages}
-                                    keyExtractor={(item) => String(item.id || item._id || `msg-${item.createdAt}-${Date.now()}`)}
-                                    renderItem={({ item: message }) => (
-                                        <ChatMessageItem message={message} profileData={profileData} />
-                                    )}
-                                    inverted={false}
-                                    removeClippedSubviews={true}
-                                    initialNumToRender={15}
-                                    maxToRenderPerBatch={10}
-                                    windowSize={10}
-                                    onContentSizeChange={() => {
-                                        if (chatScrollViewRef.current) {
-                                            chatScrollViewRef.current.scrollToEnd({ animated: true });
-                                        }
-                                    }}
-                                />
-                            );
-                        })()}
-                    </ScrollView>
+                        ) : sortedMessages.length === 0 ? (
+                            <View style={styles.emptyContainer}>
+                                <Ionicons name="chatbubble-outline" size={48} color={theme.muted} />
+                                <Text style={styles.emptyText}>Начните разговор</Text>
+                            </View>
+                        ) : (
+                            <FlatList
+                                ref={chatScrollViewRef}
+                                data={sortedMessages}
+                                keyExtractor={(item) => String(item.id || item._id || `msg-${item.createdAt}-${Date.now()}`)}
+                                renderItem={({ item: message }) => (
+                                    <ChatMessageItem message={message} profileData={profileData} />
+                                )}
+                                inverted={false}
+                                contentContainerStyle={styles.chatMessagesContent}
+                                removeClippedSubviews={true}
+                                initialNumToRender={15}
+                                maxToRenderPerBatch={10}
+                                windowSize={10}
+                                onContentSizeChange={() => {
+                                    if (chatScrollViewRef.current) {
+                                        chatScrollViewRef.current.scrollToEnd({ animated: true });
+                                    }
+                                }}
+                                onLayout={() => {
+                                    if (chatScrollViewRef.current) {
+                                        chatScrollViewRef.current.scrollToEnd({ animated: false });
+                                    }
+                                }}
+                            />
+                        )}
+                    </View>
 
                     <View style={styles.chatInputContainer}>
                         <TextInput

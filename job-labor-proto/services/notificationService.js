@@ -120,19 +120,16 @@ class NotificationService {
    */
   async registerForPushNotifications() {
     try {
-      // Получить projectId из конфигурации или использовать значение по умолчанию
-      let projectId;
-      try {
-        const appConfig = require('../app.config');
-        projectId = appConfig.default?.extra?.eas?.projectId || 
-                   Constants?.expoConfig?.extra?.eas?.projectId;
-      } catch (e) {
-        // Если не удалось загрузить конфигурацию, пробуем получить из Constants
-        const Constants = require('expo-constants').default;
-        projectId = Constants?.expoConfig?.extra?.eas?.projectId;
+      // Получить projectId из Constants
+      const projectId = Constants?.expoConfig?.extra?.eas?.projectId || 
+                       Constants?.manifest?.extra?.eas?.projectId;
+
+      if (!projectId) {
+        console.log('ProjectId не найден (EAS не настроен). Push-уведомления отключены.');
+        return null;
       }
 
-      const tokenOptions = projectId ? { projectId } : {};
+      const tokenOptions = { projectId };
       const tokenData = await Notifications.getExpoPushTokenAsync(tokenOptions);
       
       this.expoPushToken = tokenData.data;

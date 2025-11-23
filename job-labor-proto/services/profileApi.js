@@ -295,10 +295,17 @@ export const fetchProfile = async (token) => {
         headers['Authorization'] = `Bearer ${validToken}`;
       }
 
+      console.log('Fetching profile with token:', validToken ? 'present' : 'missing');
       const data = await getJson(API_ENDPOINTS.profile, API_TIMEOUT_MS, headers);
-      return data.profile || data;
+      console.log('Fetch profile response:', data);
+      
+      if (data && data.profile) {
+          return data.profile;
+      }
+      return data;
     }, token);
   } catch (error) {
+    console.warn('Fetch profile error:', error);
     // Гарантируем, что ошибка правильно обработана
     // Если ошибка уже является экземпляром наших классов ошибок, просто пробросить её
     if (error instanceof NetworkError || 

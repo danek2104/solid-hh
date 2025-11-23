@@ -15,23 +15,41 @@ const TOKEN_EXPIRY_KEY = 'tokenExpiry';
 let secureStoreAvailable = null;
 let secureStoreChecked = false;
 
+const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+
+const atobPolyfill = (input) => {
+  let str = input.replace(/=+$/, '');
+  let output = '';
+
+  if (str.length % 4 == 1) {
+    throw new Error("'atob' failed: The string to be decoded is not correctly encoded.");
+  }
+  for (let bc = 0, bs = 0, buffer, i = 0;
+    buffer = str.charAt(i++);
+
+    ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer,
+      bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0
+  ) {
+    buffer = chars.indexOf(buffer);
+  }
+
+  return output;
+};
+
 /**
  * Декодировать JWT токен без проверки подписи (только для получения данных)
  */
 const decodeJWT = (token) => {
   try {
     if (!token) return null;
-    
     const parts = token.split('.');
     if (parts.length !== 3) return null;
-    
-    const payload = parts[1];
-    // Используем Buffer для декодирования base64 (совместимость с Node.js)
-    const decodedStr = Buffer.from(payload.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8');
-    const decoded = JSON.parse(decodedStr);
-    return decoded;
-  } catch (error) {
-    console.warn('Ошибка декодирования JWT:', error);
+
+    const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const decoded = atobPolyfill(payload);
+    return JSON.parse(decoded);
+  } catch (e) {
+    console.warn('JWT decode error:', e);
     return null;
   }
 };

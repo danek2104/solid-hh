@@ -13,39 +13,70 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: '#C62828',
+        tabBarInactiveTintColor: '#A0A0A0',
+        tabBarLabelPosition: 'below-icon',
+        tabBarStyle: {
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: '600',
+        },
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
-          if (route.name === 'profile') {
-            iconName = focused ? 'person-circle' : 'person-circle-outline';
-          } else if (route.name === 'history') {
-            iconName = focused ? 'time' : 'time-outline';
-          } else if (route.name === 'reviews') {
-            iconName = focused ? 'star' : 'star-outline';
-          } else if (route.name === 'jobs') {
-            iconName = focused ? 'briefcase' : 'briefcase-outline';
-          } else if (route.name === 'chats') {
-            iconName = focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline';
-          } else if (route.name === 'settings') {
-            iconName = focused ? 'settings' : 'settings-outline';
-          } else if (route.name === 'workers') {
-            iconName = focused ? 'people' : 'people-outline';
+          switch (route.name) {
+            case 'profile':
+              iconName = focused ? 'person-circle' : 'person-circle-outline';
+              break;
+            case 'history':
+              iconName = focused ? 'time' : 'time-outline';
+              break;
+            case 'reviews':
+              iconName = focused ? 'star' : 'star-outline';
+              break;
+            case 'jobs':
+              iconName = focused ? 'briefcase' : 'briefcase-outline';
+              break;
+            case 'chats':
+              iconName = focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline';
+              break;
+            case 'settings':
+              iconName = focused ? 'settings' : 'settings-outline';
+              break;
+            case 'workers':
+              iconName = focused ? 'people' : 'people-outline';
+              break;
+            default:
+              iconName = 'help-circle-outline';
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#C62828',
-        tabBarInactiveTintColor: '#A0A0A0',
-        tabBarStyle: ((isEmployer && route.name === 'profile') || (!isEmployer && route.name === 'workers')) ? { display: 'none' } : {},
       })}
     >
-      <Tabs.Screen name="profile" options={{ title: 'Профиль' }} />
+      <Tabs.Screen 
+        name="profile" 
+        options={{ 
+          title: 'Профиль',
+          tabBarButton: isEmployer ? () => null : undefined
+        }} 
+      />
       <Tabs.Screen name="history" options={{ title: 'Смены' }} />
       <Tabs.Screen name="reviews" options={{ title: 'Отзывы' }} />
       <Tabs.Screen name="jobs" options={{ title: 'Вакансии' }} />
       <Tabs.Screen name="chats" options={{ title: 'Чаты' }} />
-      <Tabs.Screen name="settings" options={{ title: 'Настройки' }} />
-      <Tabs.Screen name="workers" options={{ title: 'Работники' }} />
+      <Tabs.Screen 
+        name="workers" 
+        options={{ 
+          title: 'Работники',
+          tabBarButton: !isEmployer ? () => null : undefined
+        }} 
+      />
     </Tabs>
   );
 }

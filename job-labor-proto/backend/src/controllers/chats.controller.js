@@ -65,6 +65,8 @@ exports.getChatMessages = async (req, res) => {
         const chatId = parseInt(req.params.id);
         const limit = parseInt(req.query.limit || '50');
 
+        console.log(`getChatMessages: userId=${userId}, chatId=${chatId}`); // Debug
+
         // Verify user is part of the chat
         const chat = await prisma.chat.findFirst({
             where: {

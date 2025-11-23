@@ -7,8 +7,10 @@ import SkillRow from './SkillRow';
 const SkillEditor = ({ categories, onLevelChange, onToggleGrow, onAddSkill, onDeleteSkill }) => {
   return (
     <View style={styles.skillEditor}>
-      {categories.map((category) => (
-        <View key={category.key} style={styles.skillCategoryCard}>
+      {categories.map((category) => {
+        const catKey = category.id || category.key;
+        return (
+        <View key={catKey} style={styles.skillCategoryCard}>
           <View style={styles.skillCategoryHeader}>
             <View>
               <Text style={styles.skillCategoryTitle}>{category.title}</Text>
@@ -23,8 +25,8 @@ const SkillEditor = ({ categories, onLevelChange, onToggleGrow, onAddSkill, onDe
           </View>
           {category.skills.map((skill) => (
             <SkillRow
-              key={`${category.key}-${skill.key}`}
-              categoryKey={category.key}
+              key={`${catKey}-${skill.key || skill.id}`}
+              categoryKey={catKey}
               skill={skill}
               onLevelChange={onLevelChange}
               onToggleGrow={onToggleGrow}
@@ -40,7 +42,7 @@ const SkillEditor = ({ categories, onLevelChange, onToggleGrow, onAddSkill, onDe
             <Text style={styles.addSkillButtonText}>Добавить навык</Text>
           </TouchableOpacity>
         </View>
-      ))}
+      )})}
     </View>
   );
 };

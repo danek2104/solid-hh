@@ -3,7 +3,7 @@ import { View, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ProfileFieldInput from './ProfileFieldInput';
 import InlineSelect from './InlineSelect';
-import { theme } from '../AppStyles';
+import { theme, styles } from '../AppStyles';
 
 const ProfileFormFields = ({ form, errors, onFieldChange, editable = true }) => (
   <>
@@ -22,25 +22,6 @@ const ProfileFormFields = ({ form, errors, onFieldChange, editable = true }) => 
       onChangeText={(value) => onFieldChange('experience', value)}
       placeholder="Например: 6 лет, стройка и отделка"
       multiline
-      editable={editable}
-    />
-    <ProfileFieldInput
-      label="Документы"
-      value={form.documentsNote}
-      onChangeText={(value) => onFieldChange('documentsNote', value)}
-      placeholder="Перечислите документы"
-      multiline
-      editable={editable}
-    />
-    <InlineSelect
-      label="Готов к выездам"
-      value={form.readyToTravel}
-      options={[
-        { label: 'По всей области', value: 'region' },
-        { label: 'Только город', value: 'city' },
-        { label: 'Без выездов', value: 'none' },
-      ]}
-      onSelect={(value) => onFieldChange('readyToTravel', value)}
       editable={editable}
     />
     <ProfileFieldInput

@@ -7,6 +7,7 @@ const profileRoutes = require('./routes/profile.routes');
 const chatsRoutes = require('./routes/chats.routes');
 const shiftsRoutes = require('./routes/shifts.routes');
 const documentsRoutes = require('./routes/documents.routes');
+const reviewsRoutes = require('./routes/reviews.routes');
 
 const { initWebSocket } = require('./websocket');
 
@@ -21,12 +22,13 @@ const PORT = process.env.PORT || 3001;
 
 
 app.use(cors());
-
 app.use(express.json());
 
-app.use('/api', limiter); // Apply global rate limit to API routes
-
-
+// Debug Logger
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+});
 
 // Serve uploaded files
 
@@ -47,6 +49,7 @@ app.use('/api/chats', chatsRoutes);
 app.use('/api/shifts', shiftsRoutes);
 
 app.use('/api/documents', documentsRoutes);
+app.use('/api/reviews', reviewsRoutes);
 
 
 

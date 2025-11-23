@@ -14,18 +14,21 @@ const ReviewsScreen = ({
   refetchReviews,
   formattedReviews,
   readinessChecklist,
+  isEmployer,
 }) => (
   <>
     <Section title="Отзывы заказчиков" compact={isCompact}>
-      <View style={styles.sectionActionHeader}>
-        <TouchableOpacity
-          onPress={() => setReviewModalVisible(true)}
-          style={styles.addButton}
-        >
-          <Ionicons name="add-circle-outline" size={20} color={theme.primary} />
-          <Text style={styles.addButtonText}>Создать отзыв</Text>
-        </TouchableOpacity>
-      </View>
+      {isEmployer && (
+        <View style={styles.sectionActionHeader}>
+          <TouchableOpacity
+            onPress={() => setReviewModalVisible(true)}
+            style={styles.addButton}
+          >
+            <Ionicons name="add-circle-outline" size={20} color={theme.primary} />
+            <Text style={styles.addButtonText}>Создать отзыв</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       {isReviewsLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.primary} />

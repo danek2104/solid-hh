@@ -117,14 +117,20 @@ const SettingsScreen = ({
             </Section>
 
             <Section title="Уведомления" compact={isCompact}>
-                {settingsSchema.map((setting) => (
-                    <SettingToggle
-                        key={setting.key}
-                        compact={isCompact}
-                        value={settingsState[setting.key]}
-                        onToggle={() => handleToggle(setting.key)}
-                        {...setting}
-                    />
+                {settingsSchema.map((group) => (
+                    <View key={group.id} style={{ marginBottom: 16 }}>
+                        <Text style={styles.blockTitle}>{group.title}</Text>
+                        {group.items.map((setting) => (
+                            <SettingToggle
+                                key={setting.key}
+                                compact={isCompact}
+                                value={settingsState[setting.key]}
+                                onToggle={() => handleToggle(setting.key)}
+                                label={setting.label}
+                                subtitle={setting.subtitle} // Ensure subtitle is passed if available
+                            />
+                        ))}
+                    </View>
                 ))}
             </Section>
 

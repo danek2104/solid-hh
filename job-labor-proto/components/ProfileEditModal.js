@@ -7,7 +7,7 @@ import ProfileFieldInput from './ProfileFieldInput';
 
 const ProfileEditModal = ({
   visible,
-  form,
+  form = {},
   errors,
   onFieldChange,
   onClose,
@@ -41,17 +41,17 @@ const ProfileEditModal = ({
           />
           <ProfileFieldInput
             label="Старт"
-            value={form.startWindow}
+            value={form?.startWindow}
             onChangeText={(value) => onFieldChange('startWindow', value)}
           />
           <ProfileFieldInput
             label="Минимальная ставка"
-            value={form.minRate}
+            value={form?.minRate}
             onChangeText={(value) => onFieldChange('minRate', value)}
           />
           <ProfileFieldInput
             label="Желаемая ставка"
-            value={form.desiredRate}
+            value={form?.desiredRate}
             onChangeText={(value) => onFieldChange('desiredRate', value)}
           />
         </ScrollView>

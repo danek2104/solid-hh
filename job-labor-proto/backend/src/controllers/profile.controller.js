@@ -22,6 +22,8 @@ exports.getProfile = async (req, res) => {
         return res.status(404).json({ error: 'Profile not found' });
     }
 
+    console.log('Fetched profile from DB:', profile); // Debug log
+
     // Flatten structure to match frontend expectations: 
     // { profile: { ...profileFields, email, phone, role } }
     const { user, ...profileData } = profile;
@@ -50,16 +52,26 @@ exports.updateProfile = async (req, res) => {
             where: { id: userId },
             data: { pushToken: updates.pushToken }
         });
-        // Remove it from updates to not try updating it on Profile model
-        delete updates.pushToken;
     }
+
+    // Fields that belong to User model or are read-only
+    const forbiddenFields = ['email', 'phone', 'role', 'password', 'id', 'userId', 'createdAt', 'updatedAt', 'pushToken'];
+    
+    // Create a clean updates object for Profile model
+    const profileUpdates = {};
+    Object.keys(updates).forEach(key => {
+        if (!forbiddenFields.includes(key)) {
+            profileUpdates[key] = updates[key];
+        }
+    });
 
     // Only update profile if there are remaining fields
     let updatedProfile = null;
-    if (Object.keys(updates).length > 0) {
+    if (Object.keys(profileUpdates).length > 0) {
+        console.log('Updating profile with:', profileUpdates); // Debug log
         updatedProfile = await prisma.profile.update({
             where: { userId },
-            data: updates
+            data: profileUpdates
         });
     } else {
         updatedProfile = await prisma.profile.findUnique({ where: { userId } });

@@ -67,20 +67,39 @@ model Profile {
   userId       Int     @unique
   user         User    @relation(fields: [userId], references: [id])
   
-  // Worker fields
-  skill        String?
-  experience   Int?
-  availability String?
-  bio          String?
-  
-  // Employer fields
-  companyName  String?
-  website      String?
-  
   // Common
+  fullName     String?
   location     String?
   avatarUrl    String?
   rating       Float   @default(0)
+  timezone     String?
+
+  // Worker fields
+  skill        String? // Main skill title
+  experience   String?
+  availability String?
+  bio          String?
+  
+  // Extended Worker Fields
+  minRate      String?
+  desiredRate  String?
+  startWindow  String?
+  documentsNote String?
+  readyToTravel String?
+  passport     String?
+  inn          String?
+  wasInRussia  Boolean @default(false)
+  
+  // Skills Array (JSON)
+  skills       Json?
+  
+  // Contacts
+  whatsapp     String?
+  telegram     String?
+
+  // Employer fields
+  companyName  String?
+  website      String?
 }
 
 model Job {

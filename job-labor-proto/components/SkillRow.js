@@ -16,11 +16,11 @@ const SkillRow = ({ categoryKey, skill, onLevelChange, onToggleGrow, onDelete })
   return (
     <View style={styles.skillRow} pointerEvents="box-none">
       <View style={styles.skillRowHeader} pointerEvents="box-none">
-        <Text style={styles.skillName}>{skill.label}</Text>
+        <Text style={styles.skillName}>{skill.label || skill.name}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }} pointerEvents="box-none">
           <View style={styles.skillRatingBadge} pointerEvents="none">
             <Ionicons name="star" size={14} color="#FFB300" />
-            <Text style={styles.skillRatingValue}>{skill.level}/5</Text>
+            <Text style={styles.skillRatingValue}>{skill.level || 1}/5</Text>
           </View>
           <TouchableOpacity
             onPress={() => {
@@ -43,7 +43,7 @@ const SkillRow = ({ categoryKey, skill, onLevelChange, onToggleGrow, onDelete })
         </View>
       </View>
       <View style={styles.skillTagsRow}>
-        {skill.tags.map((tag) => (
+        {(skill.tags || []).map((tag) => (
           <View key={tag} style={styles.skillTag}>
             <Text style={styles.skillTagText}>{tag}</Text>
           </View>
@@ -53,17 +53,17 @@ const SkillRow = ({ categoryKey, skill, onLevelChange, onToggleGrow, onDelete })
         minimumValue={1}
         maximumValue={5}
         step={1}
-        value={skill.level}
+        value={skill.level || 1}
         minimumTrackTintColor={theme.primary}
         maximumTrackTintColor="#FFE0E0"
         thumbTintColor={theme.primary}
         onValueChange={(value) => onLevelChange(categoryKey, skill.key, value)}
         style={styles.skillSlider}
       />
-      <Text style={styles.skillLevelHint}>{skillLevelLabels[skill.level]}</Text>
-      {skill.usages?.length > 0 && (
+      <Text style={styles.skillLevelHint}>{skillLevelLabels[skill.level || 1]}</Text>
+      {(skill.usages || []).length > 0 && (
         <View style={styles.skillUsageRow}>
-          {skill.usages.map((usage) => (
+          {(skill.usages || []).map((usage) => (
             <View key={usage} style={styles.skillUsagePill}>
               <Text style={styles.skillUsageText}>{usage}</Text>
             </View>

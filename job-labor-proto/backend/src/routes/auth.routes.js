@@ -15,5 +15,6 @@ router.post('/auth', authLimiter, (req, res) => {
 });
 
 router.post('/verify', authController.verify);
+router.post('/refresh', authController.refresh);
 
 module.exports = router;
