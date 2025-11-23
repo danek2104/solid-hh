@@ -1,0 +1,19 @@
+node_modules
+# Keep environment variables out of version control
+.env
+
+/generated/prisma
+
+# Uploads
+uploads/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Editor/OS
+.DS_Store
+.idea
+.vscode
+*.swp

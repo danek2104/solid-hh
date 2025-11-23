@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  worker
+  employer
+  admin
+}
+
+enum JobStatus {
+  active
+  closed
+  draft
+}
+
+enum ApplicationStatus {
+  pending
+  accepted
+  rejected
+}
+
+enum DocumentStatus {
+  pending
+  verified
+  rejected
+}
+
+enum ShiftStatus {
+  available
+  accepted
+  completed
+  cancelled
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String?  @unique
+  phone     String?  @unique
+  password  String   // Hashed
+  role      Role     @default(worker)
+  pushToken String?  // Expo Push Token
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  profile      Profile?
+  jobs         Job[]          @relation("EmployerJobs") // Jobs posted by employer
+  applications Application[]
+  documents    Document[]
+  reviews      Review[]       @relation("ReceivedReviews")
+  writtenReviews Review[]     @relation("WrittenReviews")
+  
+  // Chat relations
+  sentMessages     Message[]
+  chatsAsParticipant1 Chat[] @relation("Participant1")
+  chatsAsParticipant2 Chat[] @relation("Participant2")
+}
+
+model Profile {
+  id           Int     @id @default(autoincrement())
+  userId       Int     @unique
+  user         User    @relation(fields: [userId], references: [id])
+  
+  // Worker fields
+  skill        String?
+  experience   Int?
+  availability String?
+  bio          String?
+  
+  // Employer fields
+  companyName  String?
+  website      String?
+  
+  // Common
+  location     String?
+  avatarUrl    String?
+  rating       Float   @default(0)
+}
+
+model Job {
+  id           Int       @id @default(autoincrement())
+  employerId   Int
+  employer     User      @relation("EmployerJobs", fields: [employerId], references: [id])
+  
+  title        String
+  description  String
+  location     String
+  salary       Decimal
+  skill        String?   // Required skill
+  availability String?   // e.g. "Night shift"
+  
+  status       JobStatus @default(active)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  applications Application[]
+  shifts       Shift[]
+  
+  // JSON fields for lists (simplification for prototype)
+  requirements String[]
+  benefits     String[]
+}
+
+model Application {
+  id        Int               @id @default(autoincrement())
+  jobId     Int
+  job       Job               @relation(fields: [jobId], references: [id])
+  userId    Int
+  user      User              @relation(fields: [userId], references: [id])
+  
+  status    ApplicationStatus @default(pending)
+  message   String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@unique([jobId, userId]) // One application per job per user
+}
+
+model Shift {
+  id        Int         @id @default(autoincrement())
+  jobId     Int
+  job       Job         @relation(fields: [jobId], references: [id])
+  
+  title     String
+  date      DateTime
+  startTime String
+  endTime   String
+  location  String?
+  payment   Decimal?
+  
+  status    ShiftStatus @default(available)
+  workerId  Int?        // Accepted by worker
+  
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Document {
+  id           Int            @id @default(autoincrement())
+  userId       Int
+  user         User           @relation(fields: [userId], references: [id])
+  
+  title        String
+  type         String         // 'document' or 'photo'
+  documentType String         // 'passport', 'medical', etc.
+  description  String?
+  
+  url          String
+  mimeType     String
+  
+  status       DocumentStatus @default(pending)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model Chat {
+  id            Int       @id @default(autoincrement())
+  participant1Id Int
+  participant1  User      @relation("Participant1", fields: [participant1Id], references: [id])
+  participant2Id Int
+  participant2  User      @relation("Participant2", fields: [participant2Id], references: [id])
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  messages      Message[]
+  
+  @@unique([participant1Id, participant2Id])
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  chatId    Int
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  senderId  Int
+  sender    User     @relation(fields: [senderId], references: [id])
+  
+  text      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  targetId  Int      // User being reviewed
+  target    User     @relation("ReceivedReviews", fields: [targetId], references: [id])
+  authorId  Int      // User writing the review
+  author    User     @relation("WrittenReviews", fields: [authorId], references: [id])
+  
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+}

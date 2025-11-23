@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop, master ]
+  pull_request:
+    branches: [ main, develop, master ]
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: job-labor-proto/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./job-labor-proto
+        run: npm ci
+
+      - name: Run all tests
+        working-directory: ./job-labor-proto
+        run: npm test -- --coverage --maxWorkers=2
+
+      - name: Generate coverage report
+        working-directory: ./job-labor-proto
+        run: |
+          if [ -d "coverage" ]; then
+            echo "Coverage report generated"
+            ls -la coverage/
+          else
+            echo "No coverage directory found"
+          fi
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./job-labor-proto/coverage/lcov.info
+          flags: unittests,integration,e2e
+          name: codecov
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
