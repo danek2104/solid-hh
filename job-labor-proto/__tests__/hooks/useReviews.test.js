@@ -95,7 +95,7 @@ describe('useReviews hooks', () => {
 
       reviewsApi.fetchReviews.mockRejectedValue(error);
 
-      const { result } = renderHook(() => useReviewsQuery({}, token), { wrapper });
+      const { result } = renderHook(() => useReviewsQuery({}, token, { retry: false }), { wrapper });
 
       await waitFor(() => {
         expect(result.current.isError).toBe(true);
@@ -143,6 +143,8 @@ describe('useReviews hooks', () => {
 
       reviewsApi.createReview.mockResolvedValue(createdReview);
 
+      const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
       const { result } = renderHook(() => useCreateReview(token), { wrapper });
 
       await act(async () => {
@@ -154,7 +156,6 @@ describe('useReviews hooks', () => {
       });
 
       // Проверяем, что кеш был инвалидирован
-      const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
       expect(invalidateSpy).toHaveBeenCalled();
     });
 
@@ -164,6 +165,8 @@ describe('useReviews hooks', () => {
       const createdReview = { id: 1, ...reviewData };
 
       reviewsApi.createReview.mockResolvedValue(createdReview);
+      
+      const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
 
       const { result } = renderHook(() => useCreateReview(token), { wrapper });
 
@@ -176,7 +179,6 @@ describe('useReviews hooks', () => {
       });
 
       // Проверяем, что кеш был инвалидирован для конкретного пользователя
-      const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: ['reviews', { userId: reviewData.userId }],
       });
@@ -189,6 +191,8 @@ describe('useReviews hooks', () => {
 
       reviewsApi.createReview.mockResolvedValue(createdReview);
 
+      const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
       const { result } = renderHook(() => useCreateReview(token), { wrapper });
 
       await act(async () => {
@@ -200,7 +204,6 @@ describe('useReviews hooks', () => {
       });
 
       // Проверяем, что кеш был инвалидирован для конкретной работы
-      const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: ['reviews', { jobId: reviewData.jobId }],
       });

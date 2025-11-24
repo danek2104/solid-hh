@@ -2,15 +2,35 @@ import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import NotificationService, {
-  getNotificationService,
-  initNotificationService,
+  NOTIFICATION_SETTINGS_KEY,
+  DEFAULT_NOTIFICATION_SETTINGS,
 } from '../../services/notificationService';
 
-jest.mock('expo-notifications');
-jest.mock('@react-native-async-storage/async-storage');
-jest.mock('expo-constants', () => ({
-  expoConfig: { extra: { eas: { projectId: 'test-project-id' } } },
+jest.mock('expo-notifications', () => ({
+  setNotificationHandler: jest.fn(),
+  scheduleNotificationAsync: jest.fn(),
+  cancelAllScheduledNotificationsAsync: jest.fn(),
+  addNotificationReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  removeNotificationSubscription: jest.fn(),
+  getDevicePushTokenAsync: jest.fn(() => Promise.resolve({ data: 'test-token' })),
+  getExpoPushTokenAsync: jest.fn(() => Promise.resolve({ data: 'expo-push-token-123' })),
+  getPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted', granted: true })),
+  requestPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted', granted: true })),
+  getAllScheduledNotificationsAsync: jest.fn(() => Promise.resolve([])),
+  setNotificationChannelAsync: jest.fn(),
+  AndroidImportance: {
+    MAX: 5,
+    HIGH: 4,
+    DEFAULT: 3,
+    LOW: 2,
+    MIN: 1,
+    NONE: 0,
+  },
 }));
+
+jest.mock('@react-native-async-storage/async-storage');
+jest.mock('expo-constants');
 
 describe('notificationService', () => {
   let service;

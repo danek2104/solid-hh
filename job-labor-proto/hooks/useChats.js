@@ -27,8 +27,8 @@ export const useChatsQuery = (params = {}, token, options = {}) => {
     enabled: options?.enabled !== false,
     staleTime: options?.staleTime ?? 1 * 60 * 1000, // 1 минута по умолчанию
     gcTime: options?.cacheTime ?? 5 * 60 * 1000, // 5 минут по умолчанию
-    retry: 2,
-    retryDelay: 1000,
+    retry: options?.retry ?? 2,
+    retryDelay: options?.retryDelay ?? 1000,
     refetchInterval: options?.refetchInterval ?? 30 * 1000, // Обновление каждые 30 секунд
   });
 };
@@ -48,8 +48,8 @@ export const useChatQuery = (chatId, token, options = {}) => {
     enabled: options?.enabled !== false && !!chatId,
     staleTime: options?.staleTime ?? 2 * 60 * 1000, // 2 минуты по умолчанию
     gcTime: options?.cacheTime ?? 5 * 60 * 1000, // 5 минут по умолчанию
-    retry: 2,
-    retryDelay: 1000,
+    retry: options?.retry ?? 2,
+    retryDelay: options?.retryDelay ?? 1000,
   });
 };
 
@@ -83,8 +83,8 @@ export const useMessagesQuery = (chatId, params = {}, token, options = {}) => {
     initialPageParam: null,
     staleTime: options?.staleTime ?? 30 * 1000, // 30 секунд по умолчанию
     gcTime: options?.cacheTime ?? 10 * 60 * 1000, // 10 минут по умолчанию
-    retry: 2,
-    retryDelay: 1000,
+    retry: options?.retry ?? 2,
+    retryDelay: options?.retryDelay ?? 1000,
   });
 };
 
@@ -120,18 +120,9 @@ export const useMessagesSimpleQuery = (chatId, params = {}, token, options = {})
     enabled: options?.enabled !== false && !!chatId,
     staleTime: options?.staleTime ?? 30 * 1000, // 30 секунд по умолчанию
     gcTime: options?.cacheTime ?? 24 * 60 * 60 * 1000, // 24 часа для сохранения истории
-    retry: 2,
-    retryDelay: 1000,
+    retry: options?.retry ?? 2,
+    retryDelay: options?.retryDelay ?? 1000,
     refetchInterval: options?.refetchInterval ?? 10 * 1000, // Обновление каждые 10 секунд
-    // Начальные данные из кеша
-    placeholderData: async () => {
-      try {
-        const cached = await getCachedChatMessages(chatId, 24 * 60 * 60 * 1000);
-        return cached;
-      } catch {
-        return undefined;
-      }
-    },
   });
 };
 

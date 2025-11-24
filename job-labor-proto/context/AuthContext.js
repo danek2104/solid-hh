@@ -14,7 +14,7 @@ import {
     CorsError,
     handleApiError
 } from '../utils/errorHandler';
-import { postJson } from '../utils/api';
+import { postJson, postMultipart } from '../utils/api';
 
 const AuthContext = createContext();
 
@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
     const [authRole, setAuthRole] = useState('worker');
     const [isEmployer, setIsEmployer] = useState(false);
     const [token, setToken] = useState(null);
-    const [authForm, setAuthForm] = useState({ email: '', phone: '', password: '', confirmPassword: '', workerSkill: '', employerCompany: '' });
+    const [authForm, setAuthForm] = useState({ email: '', phone: '', password: '', confirmPassword: '', workerSkill: '', employerCompany: '', passport: null });
     const [authMode, setAuthMode] = useState('login');
     const [isProcessingAuth, setIsProcessingAuth] = useState(false);
     const [verificationCodes, setVerificationCodes] = useState({ email: '', phone: '' });
@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
     const [verificationStatus, setVerificationStatus] = useState({ email: false, phone: false });
     const [isSendingVerification, setIsSendingVerification] = useState({ email: false, phone: false });
 
-    const { email, phone, password, confirmPassword, workerSkill, employerCompany } = authForm;
+    const { email, phone, password, confirmPassword, workerSkill, employerCompany, passport } = authForm;
 
     const normalizeDigits = (value = '') => value.replace(/\D/g, '');
 
@@ -123,11 +123,38 @@ export const AuthProvider = ({ children }) => {
     );
 
     const submitAuthPayload = useCallback(
-        (payload) =>
-            postJson(API_ENDPOINTS.auth, {
-                ...payload,
-                role: payload.role ?? authRole,
-            }),
+        (payload) => {
+            if (payload.mode === 'register' && payload.passport && typeof payload.passport === 'object' && payload.passport.uri) {
+                const formData = new FormData();
+                
+                // Append all text fields
+                Object.keys(payload).forEach(key => {
+                    if (key === 'passport') return;
+                    if (payload[key] !== undefined && payload[key] !== null) {
+                        formData.append(key, payload[key]);
+                    }
+                });
+                
+                // Append role if not in payload
+                if (!payload.role) formData.append('role', authRole);
+
+                // Append file
+                const file = payload.passport;
+                const localUri = file.uri;
+                const filename = file.fileName || localUri.split('/').pop();
+                const match = /\.(\w+)$/.exec(filename);
+                const type = file.type || (match ? `image/${match[1]}` : `image`);
+
+                formData.append('passport', { uri: localUri, name: filename, type });
+
+                return postMultipart(API_ENDPOINTS.auth, formData);
+            } else {
+                return postJson(API_ENDPOINTS.auth, {
+                    ...payload,
+                    role: payload.role ?? authRole,
+                });
+            }
+        },
         [authRole]
     );
 
@@ -148,7 +175,7 @@ export const AuthProvider = ({ children }) => {
             setIsEmployer(false);
             setAuthRole('worker');
             setAuthMode('login');
-            setAuthForm({ email: '', phone: '', password: '', confirmPassword: '', workerSkill: '', employerCompany: '' });
+            setAuthForm({ email: '', phone: '', password: '', confirmPassword: '', workerSkill: '', employerCompany: '', passport: null });
             resetVerificationState();
         }
     }, [resetVerificationState]);
@@ -282,6 +309,7 @@ export const AuthProvider = ({ children }) => {
                 phone: trimmedPhone || undefined,
                 workerSkill: workerSkill || undefined,
                 employerCompany: employerCompany || undefined,
+                passport: authForm.passport || undefined,
                 ...(authMode === 'register' && verificationStatus.email && verificationStatus.phone && {
                     emailVerificationCode: verificationInputs.email.trim() || undefined,
                     phoneVerificationCode: verificationInputs.phone.trim() || undefined,

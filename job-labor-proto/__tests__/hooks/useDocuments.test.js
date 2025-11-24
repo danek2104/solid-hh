@@ -23,7 +23,7 @@ describe('useDocuments hooks', () => {
       defaultOptions: {
         queries: {
           retry: false,
-          gcTime: 0,
+          gcTime: Infinity, // Prevent premature garbage collection
         },
         mutations: {
           retry: false,
@@ -71,7 +71,7 @@ describe('useDocuments hooks', () => {
 
       documentsApi.fetchDocuments.mockRejectedValue(error);
 
-      const { result } = renderHook(() => useDocumentsQuery(token), { wrapper });
+      const { result } = renderHook(() => useDocumentsQuery(token, { retry: false }), { wrapper });
 
       await waitFor(() => {
         expect(result.current.isError).toBe(true);
@@ -125,7 +125,7 @@ describe('useDocuments hooks', () => {
 
       documentsApi.fetchDocument.mockRejectedValue(error);
 
-      const { result } = renderHook(() => useDocumentQuery(documentId, token), { wrapper });
+      const { result } = renderHook(() => useDocumentQuery(documentId, token, { retry: false }), { wrapper });
 
       await waitFor(() => {
         expect(result.current.isError).toBe(true);

@@ -12,8 +12,19 @@ import {
 import * as chatsApi from '../../services/chatsApi';
 import * as cacheService from '../../services/cacheService';
 
-jest.mock('../../services/chatsApi');
-jest.mock('../../services/cacheService');
+jest.mock('../../services/chatsApi', () => ({
+  fetchChats: jest.fn(),
+  fetchChat: jest.fn(),
+  fetchMessages: jest.fn(),
+  sendMessage: jest.fn(),
+  markMessagesAsRead: jest.fn(),
+}));
+
+jest.mock('../../services/cacheService', () => ({
+  cacheChatMessages: jest.fn(),
+  getCachedChatMessages: jest.fn(),
+  clearChatMessagesCache: jest.fn(),
+}));
 
 describe('useChats hooks', () => {
   let queryClient;
@@ -24,7 +35,7 @@ describe('useChats hooks', () => {
       defaultOptions: {
         queries: {
           retry: false,
-          gcTime: 0,
+          gcTime: Infinity,
         },
         mutations: {
           retry: false,
@@ -82,7 +93,7 @@ describe('useChats hooks', () => {
 
       chatsApi.fetchChats.mockRejectedValue(error);
 
-      const { result } = renderHook(() => useChatsQuery({}, token), { wrapper });
+      const { result } = renderHook(() => useChatsQuery({}, token, { retry: false }), { wrapper });
 
       await waitFor(() => {
         expect(result.current.isError).toBe(true);
@@ -195,7 +206,8 @@ describe('useChats hooks', () => {
       cacheService.getCachedChatMessages.mockResolvedValue(cachedMessages);
       chatsApi.fetchMessages.mockRejectedValue(error);
 
-      const { result } = renderHook(() => useMessagesSimpleQuery(chatId, {}, token), { wrapper });
+      // Pass retry: false to avoid waiting
+      const { result } = renderHook(() => useMessagesSimpleQuery(chatId, {}, token, { retry: false }), { wrapper });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
@@ -228,7 +240,7 @@ describe('useChats hooks', () => {
     it('должен отправить сообщение', async () => {
       const chatId = '1';
       const token = 'test-token';
-      const messageData = { text: 'Hello', senderId: 'user1' };
+      const messageData = { chatId, text: 'Hello', senderId: 'user1' };
       const serverMessage = {
         id: 123,
         text: 'Hello',
@@ -239,7 +251,8 @@ describe('useChats hooks', () => {
       chatsApi.sendMessage.mockResolvedValue(serverMessage);
       cacheService.cacheChatMessages.mockResolvedValue();
 
-      const { result } = renderHook(() => useSendMessage(chatId, token), { wrapper });
+      // useSendMessage accepts (token)
+      const { result } = renderHook(() => useSendMessage(token), { wrapper });
 
       await act(async () => {
         result.current.mutate(messageData);
@@ -249,13 +262,14 @@ describe('useChats hooks', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(chatsApi.sendMessage).toHaveBeenCalledWith(chatId, messageData, token);
+      // expect chatsApi.sendMessage(chatId, {text, senderId}, token)
+      expect(chatsApi.sendMessage).toHaveBeenCalledWith(chatId, { text: 'Hello', senderId: 'user1' }, token);
     });
 
     it('должен выполнить оптимистичное обновление', async () => {
       const chatId = '1';
       const token = 'test-token';
-      const messageData = { text: 'Hello', senderId: 'user1' };
+      const messageData = { chatId, text: 'Hello', senderId: 'user1' };
       const serverMessage = {
         id: 123,
         text: 'Hello',
@@ -269,7 +283,7 @@ describe('useChats hooks', () => {
       chatsApi.sendMessage.mockResolvedValue(serverMessage);
       cacheService.cacheChatMessages.mockResolvedValue();
 
-      const { result } = renderHook(() => useSendMessage(chatId, token), { wrapper });
+      const { result } = renderHook(() => useSendMessage(token), { wrapper });
 
       await act(async () => {
         result.current.mutate(messageData);
@@ -286,7 +300,7 @@ describe('useChats hooks', () => {
     it('должен обработать ошибку и восстановить предыдущее состояние', async () => {
       const chatId = '1';
       const token = 'test-token';
-      const messageData = { text: 'Hello', senderId: 'user1' };
+      const messageData = { chatId, text: 'Hello', senderId: 'user1' };
       const previousMessages = [{ id: 1, text: 'Previous' }];
       const error = new Error('Failed to send');
 
@@ -295,7 +309,7 @@ describe('useChats hooks', () => {
 
       chatsApi.sendMessage.mockRejectedValue(error);
 
-      const { result } = renderHook(() => useSendMessage(chatId, token), { wrapper });
+      const { result } = renderHook(() => useSendMessage(token), { wrapper });
 
       await act(async () => {
         result.current.mutate(messageData);
@@ -338,6 +352,8 @@ describe('useChats hooks', () => {
 
       chatsApi.markMessagesAsRead.mockResolvedValue({ success: true });
 
+      const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
       const { result } = renderHook(() => useMarkMessagesAsRead(chatId, token), { wrapper });
 
       await act(async () => {
@@ -349,7 +365,6 @@ describe('useChats hooks', () => {
       });
 
       // Проверяем, что кеш был инвалидирован
-      const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
       expect(invalidateSpy).toHaveBeenCalled();
     });
   });

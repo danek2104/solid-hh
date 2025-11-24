@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, FlatList, TextInput, Modal, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, FlatList, TextInput, Modal, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { styles, theme } from '../AppStyles';
 import Section from '../components/Section';

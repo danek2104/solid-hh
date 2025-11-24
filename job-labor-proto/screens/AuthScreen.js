@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Text,
   View,
   TouchableOpacity,
   TextInput,
   ScrollView,
-  SafeAreaView,
   ActivityIndicator,
+  Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+import * as ImagePicker from 'expo-image-picker';
 import { styles } from '../AppStyles';
 import AuthBenefit from '../components/AuthBenefit';
 
@@ -38,13 +41,30 @@ const AuthScreen = ({
   handleGuestAccess,
   authForm,
 }) => {
+  const { t } = useTranslation();
+  const [passportImage, setPassportImage] = useState(null);
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setPassportImage(result.assets[0].uri);
+      handleFormChange('passport', result.assets[0]);
+    }
+  };
+
   const authCopy = {
     login: {
-      title: 'Войти в аккаунт',
+      title: t('login'), // Simplified for now
       subtitle: 'Получайте смены быстрее и контролируйте выплаты',
     },
     register: {
-      title: 'Создать аккаунт',
+      title: t('register'), // Simplified
       subtitle: 'Поделитесь опытом, подтвердите контакты и начните работу',
     },
     recover: {
@@ -52,11 +72,12 @@ const AuthScreen = ({
       subtitle: 'Отправим ссылку или код для сброса пароля',
     },
   };
+  
   const primaryLabel =
     authMode === 'login'
-      ? 'Войти'
+      ? t('login')
       : authMode === 'register'
-        ? 'Зарегистрироваться'
+        ? t('register')
         : 'Отправить ссылку';
 
   return (
@@ -68,7 +89,7 @@ const AuthScreen = ({
         style={styles.authHero}
       >
         <Text style={styles.authBadge}>workmatch</Text>
-        <Text style={styles.authTitle}>Подберём смену уже сегодня</Text>
+        <Text style={styles.authTitle}>{t('welcome')}</Text>
         <Text style={styles.authSubtitle}>
           Рабочий профиль, подтверждённый опыт и прозрачный график
         </Text>
@@ -77,8 +98,8 @@ const AuthScreen = ({
         <View style={styles.authCard}>
           <View style={styles.authModeTabs}>
             {[
-              { key: 'login', label: 'Вход' },
-              { key: 'register', label: 'Регистрация' },
+              { key: 'login', label: t('login') },
+              { key: 'register', label: t('register') },
               { key: 'recover', label: 'Восстановление' },
             ].map((mode) => (
               <TouchableOpacity
@@ -108,7 +129,10 @@ const AuthScreen = ({
           {authMode !== 'recover' && (
             <>
               <View style={styles.roleSwitcher}>
-                {authRoles.map((role) => (
+                {[
+                  { key: 'worker', label: t('worker'), icon: 'hammer-outline' },
+                  { key: 'employer', label: t('employer'), icon: 'briefcase-outline' }
+                ].map((role) => (
                   <TouchableOpacity
                     key={role.key}
                     style={[
@@ -152,11 +176,7 @@ const AuthScreen = ({
           />
           {(authMode === 'register' || authMode === 'recover') && (
             <TextInput
-              placeholder={
-                authMode === 'register'
-                  ? 'Номер телефона (например: +79824167606)'
-                  : 'Телефон (если нет доступа к почте), например: +79824167606'
-              }
+              placeholder={t('phonePlaceholder')}
               placeholderTextColor="#BDBDBD"
               style={styles.authInput}
               value={phone}
@@ -185,6 +205,31 @@ const AuthScreen = ({
             />
           )}
           {authMode === 'register' && <RoleSpecificFields authRole={authRole} authForm={authForm} handleFormChange={handleFormChange} />}
+          
+          {authMode === 'register' && (
+            <View style={{ marginTop: 15, marginBottom: 15 }}>
+              <Text style={styles.authSubLabel}>Фото паспорта</Text>
+              <TouchableOpacity 
+                style={[
+                  styles.verificationAction, 
+                  { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }
+                ]} 
+                onPress={pickImage}
+              >
+                <Ionicons name="camera-outline" size={20} color="#C62828" style={{ marginRight: 8 }} />
+                <Text style={styles.verificationActionText}>
+                  {passportImage ? 'Изменить фото' : 'Загрузить фото'}
+                </Text>
+              </TouchableOpacity>
+              {passportImage && (
+                <Image 
+                  source={{ uri: passportImage }} 
+                  style={{ width: '100%', height: 200, marginTop: 10, borderRadius: 8, resizeMode: 'cover' }} 
+                />
+              )}
+            </View>
+          )}
+
           {authMode === 'register' && (
             <>
               <Text style={styles.authSubLabel}>Подтверждение контактов</Text>

@@ -1,6 +1,31 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '../context/AuthContext';
+import { LanguageProvider } from '../context/LanguageContext';
+
+// Mock AuthContext and LanguageContext for testing purposes
+jest.mock('../context/AuthContext', () => {
+  const React = require('react');
+  return {
+    AuthProvider: ({ children }) => React.createElement(React.Fragment, null, children),
+    useAuth: () => ({ isAuthenticated: true, isEmployer: false, token: 'test-token', handleLogout: jest.fn(), handleLogin: jest.fn() }),
+    AuthContext: {
+      Consumer: ({ children }) => children({ isAuthenticated: true, isEmployer: false, token: 'test-token', handleLogout: jest.fn(), handleLogin: jest.fn() }),
+    },
+  };
+});
+
+jest.mock('../context/LanguageContext', () => {
+  const React = require('react');
+  return {
+    LanguageProvider: ({ children }) => React.createElement(React.Fragment, null, children),
+    useLanguage: () => ({ currentLanguage: 'en', changeLanguage: jest.fn(), isLanguageSelected: true, isLoading: false, confirmLanguageSelection: jest.fn() }),
+    LanguageContext: {
+      Consumer: ({ children }) => children({ currentLanguage: 'en', changeLanguage: jest.fn(), isLanguageSelected: true, isLoading: false, confirmLanguageSelection: jest.fn() }),
+    },
+  };
+});
 
 /**
  * Создает новый QueryClient для каждого теста
@@ -11,7 +36,7 @@ function createTestQueryClient() {
     defaultOptions: {
       queries: {
         retry: false, // Отключаем retry в тестах для более быстрого выполнения
-        gcTime: 0, // Не кешируем в тестах (gcTime в v5 вместо cacheTime)
+        gcTime: Infinity, // Для стабильности тестов, держим кеш постоянно
       },
       mutations: {
         retry: false,
@@ -21,7 +46,7 @@ function createTestQueryClient() {
 }
 
 /**
- * Обертка для render, которая автоматически добавляет QueryClientProvider
+ * Обертка для render, которая автоматически добавляет необходимые провайдеры
  * @param {React.Component} ui - Компонент для рендеринга
  * @param {Object} options - Опции для render
  * @returns {Object} Результат render с дополнительным полем queryClient для очистки
@@ -31,7 +56,11 @@ export function renderWithProviders(ui, { queryClient, ...renderOptions } = {}) 
 
   const Wrapper = ({ children }) => (
     <QueryClientProvider client={testQueryClient}>
-      {children}
+      <LanguageProvider>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 
@@ -64,4 +93,5 @@ export function cleanupQueryClient(client) {
 
 // Экспортируем также createTestQueryClient для случаев, когда нужен кастомный клиент
 export { createTestQueryClient };
+
 

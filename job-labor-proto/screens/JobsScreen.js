@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, FlatList, TextInput, Modal, ScrollView, SafeAreaView, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, FlatList, TextInput, Modal, ScrollView, Linking } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { styles, theme } from '../AppStyles';
 import Section from '../components/Section';
@@ -35,6 +36,11 @@ const JobsScreen = ({
     setApplicationMessage,
     applyToJobMutation,
     handleJobApply,
+    jobConfirmationModalVisible,
+    handleCloseConfirmationModal,
+    handleConfirmApply,
+    isDocsConfirmed,
+    setIsDocsConfirmed,
 }) => (
     <>
         {/* ... view toggle ... */}
@@ -386,6 +392,89 @@ const JobsScreen = ({
                             <Text style={styles.errorText}>Не удалось загрузить детали вакансии</Text>
                         </View>
                     )}
+                </ScrollView>
+            </SafeAreaView>
+        </Modal>
+        
+        {/* Confirmation Modal */}
+        <Modal
+            visible={jobConfirmationModalVisible}
+            animationType="slide"
+            presentationStyle="pageSheet"
+            onRequestClose={handleCloseConfirmationModal}
+        >
+             <SafeAreaView style={styles.modalContainer}>
+                <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitle}>Подготовка документов</Text>
+                    <TouchableOpacity onPress={handleCloseConfirmationModal} style={styles.modalCloseButton}>
+                        <Ionicons name="close" size={24} color={theme.text} />
+                    </TouchableOpacity>
+                </View>
+                <ScrollView style={styles.modalContent}>
+                    <View style={styles.documentsSection}>
+                        <Text style={[styles.documentsTitle, { marginTop: 0 }]}>
+                            Для оформления вам понадобятся следующие документы. Пожалуйста, ознакомьтесь и подготовьте их.
+                        </Text>
+                        
+                        <View style={styles.docGroup}>
+                            <Text style={styles.docGroupTitle}>✅ Готовы (Распечатать и взять с собой)</Text>
+                            {['Трудовой договор №123', 'Пропуск на объект'].map((doc, idx) => (
+                                <TouchableOpacity 
+                                    key={idx} 
+                                    style={styles.docItem}
+                                    onPress={() => Linking.openURL('https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf')}
+                                >
+                                    <Ionicons name="print-outline" size={18} color={theme.primary} />
+                                    <Text style={styles.docText}>{doc}</Text>
+                                    <Ionicons name="download-outline" size={16} color={theme.muted} />
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        <View style={styles.docGroup}>
+                            <Text style={styles.docGroupTitle}>📝 Заполнить и распечатать</Text>
+                            {['Анкета по ТБ', 'Лист учета времени'].map((doc, idx) => (
+                                <TouchableOpacity 
+                                    key={idx} 
+                                    style={styles.docItem}
+                                    onPress={() => Linking.openURL('https://www.africau.edu/images/default/sample.pdf')}
+                                >
+                                    <Ionicons name="create-outline" size={18} color={theme.accent} />
+                                    <Text style={styles.docText}>{doc}</Text>
+                                    <Ionicons name="download-outline" size={16} color={theme.muted} />
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        <TouchableOpacity
+                            style={[styles.checkboxContainer, { marginTop: 20, marginBottom: 10 }]}
+                            onPress={() => setIsDocsConfirmed(!isDocsConfirmed)}
+                        >
+                            <Ionicons 
+                                name={isDocsConfirmed ? "checkbox" : "square-outline"} 
+                                size={24} 
+                                color={isDocsConfirmed ? theme.primary : theme.muted} 
+                            />
+                            <Text style={[styles.checkboxLabel, { marginLeft: 10, flex: 1 }]}>
+                                Я ознакомился со списком необходимых документов и готов их предоставить.
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[
+                                styles.primaryButton,
+                                (applyToJobMutation.isPending || !isDocsConfirmed) && styles.primaryButtonDisabled,
+                            ]}
+                            onPress={handleConfirmApply}
+                            disabled={applyToJobMutation.isPending || !isDocsConfirmed}
+                        >
+                            {applyToJobMutation.isPending ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={styles.primaryButtonText}>Подтвердить и откликнуться</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
                 </ScrollView>
             </SafeAreaView>
         </Modal>

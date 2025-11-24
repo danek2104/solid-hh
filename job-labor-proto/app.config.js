@@ -26,19 +26,19 @@ const ENV = process.env.APP_ENV || process.env.NODE_ENV || 'development';
 // Значения по умолчанию для каждого окружения
 const envConfig = {
   development: {
-    apiUrl: 'https://api.workmatch.dev',
-    wsUrl: 'wss://api.workmatch.dev/ws',
-    apiTimeout: 1200,
+    apiUrl: 'http://192.168.1.115:3001/api',
+    wsUrl: 'ws://192.168.1.115:3001',
+    apiTimeout: 15000, // Увеличили таймаут до 15с для надежности
   },
   staging: {
     apiUrl: 'https://api-staging.workmatch.dev',
     wsUrl: 'wss://api-staging.workmatch.dev/ws',
-    apiTimeout: 1200,
+    apiTimeout: 5000,
   },
   production: {
     apiUrl: 'https://api.workmatch.dev',
     wsUrl: 'wss://api.workmatch.dev/ws',
-    apiTimeout: 1200,
+    apiTimeout: 5000,
   },
 };
 

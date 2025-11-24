@@ -192,6 +192,21 @@ app.get('/api/jobs', (req, res) => {
       status: 'active',
       createdAt: new Date().toISOString(),
     },
+    {
+      id: 3,
+      title: 'Электрик',
+      description: 'Требуется электрик для монтажа проводки. Опыт от 3 лет.',
+      location: 'Ташкент',
+      salary: 750000,
+      skill: 'Электрик',
+      availability: 'Гибкий график',
+      status: 'active',
+      employer: {
+        name: 'ЭлектроМонтаж',
+        rating: 4.9
+      },
+      createdAt: new Date().toISOString(),
+    },
   ].filter(job => !search || job.title.toLowerCase().includes(search.toLowerCase()));
   
   setTimeout(() => {

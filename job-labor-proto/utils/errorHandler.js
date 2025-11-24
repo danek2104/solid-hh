@@ -35,6 +35,7 @@ export class UnauthorizedError extends Error {
   constructor(message, originalError) {
     super(message || 'Сессия истекла. Необходимо войти заново.');
     this.name = 'UnauthorizedError';
+    this.status = 401;
     this.originalError = originalError;
   }
 }
@@ -43,6 +44,7 @@ export class ForbiddenError extends Error {
   constructor(message, originalError) {
     super(message || 'Доступ запрещён.');
     this.name = 'ForbiddenError';
+    this.status = 403;
     this.originalError = originalError;
   }
 }

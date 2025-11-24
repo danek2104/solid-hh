@@ -181,7 +181,7 @@ export const useDocumentStatusesQuery = (token, options = {}) => {
       
       return statuses;
     },
-    enabled: options?.enabled !== false,
+    enabled: !!token && options?.enabled !== false,
     staleTime: 2 * 60 * 1000, // 2 минуты
     gcTime: 5 * 60 * 1000, // 5 минут
     retry: 2,

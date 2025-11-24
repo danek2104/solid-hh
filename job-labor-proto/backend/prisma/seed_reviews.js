@@ -2,81 +2,57 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = 's@mail.ru';
-  
-  // 1. Find user by email
-  const user = await prisma.user.findUnique({
-    where: { email },
-  });
+  console.log('Seeding reviews...');
 
-  if (!user) {
-    console.error(`User with email ${email} not found`);
+  // 1. Find users
+  const employer = await prisma.user.findFirst({ where: { role: 'employer' } });
+  const worker = await prisma.user.findFirst({ where: { role: 'worker' } });
+
+  if (!employer || !worker) {
+    console.log('Skipping reviews seed: need both employer and worker');
     return;
   }
 
-  console.log(`Found user: ${user.id}`);
+  console.log(`Reviewer (Employer): ${employer.id} -> Target (Worker): ${worker.id}`);
 
-  // 2. Create Author (Employer) for reviews if not exists
-  // Usually ID 1 is test user, but let's ensure we have a distinct author
-  let author = await prisma.user.findFirst({
-    where: { role: 'employer', NOT: { id: user.id } }
-  });
-
-  if (!author) {
-    console.log('Creating test employer for reviews...');
-    author = await prisma.user.create({
-      data: {
-        email: 'boss@example.com',
-        password: 'hashed_password_placeholder',
-        role: 'employer',
-        profile: {
-          create: {
-            companyName: 'СтройМастер',
-            rating: 5.0
-          }
-        }
-      }
-    });
-  }
-
-  // 3. Create Reviews
-  console.log('Creating reviews...');
-  
-  await prisma.review.create({
-    data: {
-      authorId: author.id,
-      targetId: user.id,
+  // 2. Create Reviews for Worker
+  const reviews = [
+    {
+      authorId: employer.id,
+      targetId: worker.id,
       rating: 5,
-      comment: 'Отличный работник! Пришел вовремя, все сделал быстро. Рекомендую.',
-      createdAt: new Date(Date.now() - 86400000 * 2) // 2 days ago
+      comment: 'Отличный работник! Пришел вовремя, все сделал аккуратно. Рекомендую.',
+      createdAt: new Date('2025-11-20T10:00:00Z')
+    },
+    {
+      authorId: employer.id,
+      targetId: worker.id,
+      rating: 4,
+      comment: 'Хороший специалист, но немного задержался. В остальном претензий нет.',
+      createdAt: new Date('2025-11-22T14:30:00Z')
+    },
+    {
+      authorId: employer.id,
+      targetId: worker.id,
+      rating: 5,
+      comment: 'Профессионал своего дела. Быстро разобрался с проблемой.',
+      createdAt: new Date('2025-11-23T09:15:00Z')
     }
-  });
+  ];
 
-  await prisma.review.create({
-    data: {
-      authorId: author.id,
-      targetId: user.id,
-      rating: 2,
-      comment: 'Опоздал на час и забыл инструменты. Работу сделал, но осадок остался.',
-      createdAt: new Date(Date.now() - 86400000 * 5) // 5 days ago
-    }
-  });
-
-  // 4. Recalculate Rating
-  const aggregations = await prisma.review.aggregate({
-    where: { targetId: user.id },
-    _avg: { rating: true }
-  });
-
-  if (aggregations._avg.rating) {
-    await prisma.profile.update({
-      where: { userId: user.id },
-      data: { rating: aggregations._avg.rating }
+  for (const review of reviews) {
+    await prisma.review.create({
+      data: review
     });
-    console.log(`Updated rating to ${aggregations._avg.rating}`);
   }
 
-  console.log('Done!');
+  // Update worker rating
+  await prisma.profile.update({
+    where: { userId: worker.id },
+    data: { rating: 4.7 }
+  });
+
+  console.log(`Created ${reviews.length} reviews for worker ${worker.id}`);
 }
 
 main()

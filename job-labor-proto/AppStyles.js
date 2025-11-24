@@ -1290,7 +1290,8 @@ export const styles = StyleSheet.create({
     backgroundColor: '#fff',
     boxShadow: '0px -4px 10px 0px rgba(0, 0, 0, 0.08)',
     width: '100%',
-    alignSelf: 'stretch',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   bottomNavCompact: {
     paddingHorizontal: 12,

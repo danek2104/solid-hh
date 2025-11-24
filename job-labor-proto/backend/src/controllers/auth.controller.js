@@ -57,6 +57,21 @@ exports.register = async (req, res) => {
         },
         include: { profile: true }
       });
+
+      if (req.file) {
+        await prisma.document.create({
+          data: {
+            userId: newUser.id,
+            title: 'Passport',
+            type: 'photo',
+            documentType: 'passport',
+            url: `/uploads/${req.file.filename}`,
+            mimeType: req.file.mimetype,
+            status: 'pending'
+          }
+        });
+      }
+
       return newUser;
     });
 

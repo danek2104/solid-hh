@@ -16,8 +16,8 @@ export const useReviewsQuery = (params = {}, token, options = {}) => {
     enabled: options?.enabled !== false,
     staleTime: options?.staleTime ?? 2 * 60 * 1000, // 2 минуты по умолчанию
     gcTime: options?.cacheTime ?? 5 * 60 * 1000, // 5 минут по умолчанию
-    retry: 2,
-    retryDelay: 1000,
+    retry: options?.retry ?? 2,
+    retryDelay: options?.retryDelay ?? 1000,
   });
 };
 

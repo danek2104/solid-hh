@@ -8,18 +8,13 @@ import TimelineItem from '../components/TimelineItem';
 const HistoryScreen = ({ closedShifts, timelineMilestones, isCompact }) => (
     <>
         <Section title="Закрытые смены" compact={isCompact}>
-            <FlatList
-                data={closedShifts}
-                keyExtractor={(item, index) => String(item.title || index)}
-                renderItem={({ item: shift }) => (
-                    <ClosedShiftCard {...shift} />
-                )}
-                scrollEnabled={false}
-                removeClippedSubviews={true}
-                initialNumToRender={10}
-                maxToRenderPerBatch={10}
-                windowSize={5}
-            />
+            {closedShifts.length > 0 ? (
+                closedShifts.map((shift) => (
+                    <ClosedShiftCard key={shift.id || shift.title} {...shift} />
+                ))
+            ) : (
+                <Text style={styles.emptyText}>Нет закрытых смен</Text>
+            )}
         </Section>
 
         <Section title="Рекомендации" compact={isCompact}>

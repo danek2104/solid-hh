@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { styles, theme } from '../AppStyles';
 import Section from '../components/Section';
 import SettingToggle from '../components/SettingToggle';
@@ -19,9 +20,45 @@ const SettingsScreen = ({
     handleLogout,
     isAuthenticated,
 }) => {
+    const { t, i18n } = useTranslation();
     const notificationSettingsData = notificationSettings || {};
+
+    const languages = [
+        { code: 'ru', label: 'Русский', flag: '🇷🇺' },
+        { code: 'uz', label: "O'zbekcha", flag: '🇺🇿' },
+        { code: 'tj', label: 'Тоҷикӣ', flag: '🇹🇯' },
+        { code: 'kg', label: 'Кыргызча', flag: '🇰🇬' },
+        { code: 'kz', label: 'Қазақша', flag: '🇰🇿' },
+        { code: 'en', label: 'English', flag: '🇬🇧' },
+    ];
+
+    const changeLanguage = async (langCode) => {
+        await i18n.changeLanguage(langCode);
+        // Force update via local state or similar if needed, but i18n usually triggers re-render
+    };
+
     return (
         <>
+            <Section title={t('selectLanguage')} compact={isCompact}>
+                <View style={styles.shortcutRow}>
+                    {languages.map((lang) => (
+                        <TouchableOpacity
+                            key={lang.code}
+                            style={[
+                                styles.shortcutCard, 
+                                { backgroundColor: i18n.language === lang.code ? '#FFF0F0' : '#fff', borderColor: i18n.language === lang.code ? theme.primary : theme.border }
+                            ]}
+                            onPress={() => changeLanguage(lang.code)}
+                        >
+                            <Text style={{ fontSize: 24 }}>{lang.flag}</Text>
+                            <Text style={[styles.shortcutTitle, { color: i18n.language === lang.code ? theme.primary : theme.text }]}>
+                                {lang.label}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </Section>
+
             <Section title="Push-уведомления" compact={isCompact}>
                 <SettingToggle
                     compact={isCompact}

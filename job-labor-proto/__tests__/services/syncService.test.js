@@ -4,11 +4,7 @@ import SyncService, { getSyncService, initSyncService } from '../../services/syn
 import { fetchProfile, fetchDocumentStatuses } from '../../services/profileApi';
 import { getCachedProfile, cacheProfile, cacheDocumentStatuses } from '../../services/cacheService';
 
-jest.mock('react-native', () => ({
-  AppState: {
-    addEventListener: jest.fn(),
-  },
-}));
+
 
 jest.mock('@react-native-community/netinfo');
 jest.mock('../../services/profileApi');

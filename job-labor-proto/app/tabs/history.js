@@ -19,7 +19,7 @@ export default function History() {
         isLoading: isShiftsLoading,
         error: shiftsError,
         refetch: refetchShifts
-    } = useShiftsQuery(token);
+    } = useShiftsQuery({}, token);
 
     const shifts = shiftsData?.shifts || [];
 
@@ -36,12 +36,23 @@ export default function History() {
     ).map(s => ({
         id: s.id,
         title: s.title || s.job?.title || 'Смена',
-        date: s.date,
-        time: `${s.startTime} - ${s.endTime}`,
-        pay: s.payment ? `${s.payment} сум` : null,
+        date: new Date(s.date).toLocaleDateString('ru-RU'),
+        location: s.location || s.job?.location || 'Локация не указана',
+        payout: s.payment ? `${s.payment} сум` : null,
         rating: 5, // Placeholder rating
         feedback: s.feedback || 'Отзыв не оставлен' // Placeholder
     }));
+
+    // Add a static example shift
+    closedShifts.push({
+        id: 'example-closed-1',
+        title: 'Демонтаж старого склада',
+        date: new Date(Date.now() - 86400000).toLocaleDateString('ru-RU'), // Yesterday
+        location: 'Москва, ул. Ленина 1',
+        payout: '2500 руб',
+        rating: 5,
+        feedback: 'Отличная работа, все быстро и чисто.'
+    });
 
     const timelineMilestones = shifts.filter(s => 
         (s.status === 'accepted' || s.status === 'available') && 

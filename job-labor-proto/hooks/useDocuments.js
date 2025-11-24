@@ -36,40 +36,39 @@ export const useDocumentsQuery = (token, options = {}) => {
     enabled: options?.enabled !== false && !!token,
     staleTime: options?.staleTime ?? 2 * 60 * 1000, // 2 минуты по умолчанию
     gcTime: options?.cacheTime ?? 5 * 60 * 1000, // 5 минут по умолчанию
-    retry: 2,
-    retryDelay: 1000,
-  });
-};
-
-/**
- * Хук для получения конкретного документа
- */
-export const useDocumentQuery = (documentId, token, options = {}) => {
-  return useQuery({
-    queryKey: ['document', documentId, token],
-    queryFn: async () => {
-      try {
-        const document = await fetchDocument(documentId, token);
-        return document;
-      } catch (error) {
-        const errorMessage = getErrorMessage(error);
-        const enhancedError = error?.message 
-          ? error 
-          : new Error(errorMessage || 'Не удалось загрузить документ. Попробуйте ещё раз.');
-        
-        if (error && typeof error === 'object') {
-          Object.assign(enhancedError, error);
-        }
-        
-        throw enhancedError;
-      }
-    },
-    enabled: options?.enabled !== false && !!token && !!documentId,
-    staleTime: options?.staleTime ?? 5 * 60 * 1000, // 5 минут по умолчанию
-    gcTime: options?.cacheTime ?? 10 * 60 * 1000, // 10 минут по умолчанию
-    retry: 2,
-    retryDelay: 1000,
-  });
+        retry: options?.retry ?? 2,
+        retryDelay: options?.retryDelay ?? 1000,
+      });
+    };
+    
+    /**
+     * Хук для получения конкретного документа
+     */
+    export const useDocumentQuery = (documentId, token, options = {}) => {
+      return useQuery({
+        queryKey: ['document', documentId, token],
+        queryFn: async () => {
+          try {
+            const document = await fetchDocument(documentId, token);
+            return document;
+          } catch (error) {
+            const errorMessage = getErrorMessage(error);
+            const enhancedError = error?.message
+              ? error
+              : new Error(errorMessage || 'Не удалось загрузить документ. Попробуйте ещё раз.');
+    
+            if (error && typeof error === 'object') {
+              Object.assign(enhancedError, error);
+            }
+    
+            throw enhancedError;
+          }
+        },
+        enabled: options?.enabled !== false && !!token && !!documentId,
+        staleTime: options?.staleTime ?? 5 * 60 * 1000, // 5 минут по умолчанию
+        gcTime: options?.cacheTime ?? 10 * 60 * 1000, // 10 минут по умолчанию
+        retry: options?.retry ?? 2,
+        retryDelay: options?.retryDelay ?? 1000,  });
 };
 
 /**
