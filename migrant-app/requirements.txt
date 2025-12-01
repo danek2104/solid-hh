@@ -1,0 +1,2 @@
+This is a Node.js/React Native project.
+Please refer to package.json for dependencies.
