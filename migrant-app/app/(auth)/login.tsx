@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { Text, TextInput, Button, HelperText, Portal, Modal, List } from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Image } from 'react-native';
+import { Text, List, Modal, Portal, PaperProvider } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+
+import Colors from '@/constants/Colors';
+import PrimaryButton from '@/components/PrimaryButton';
+import CustomInput from '@/components/CustomInput';
+import { useColorScheme } from '@/components/useColorScheme';
 
 const LANGUAGES = [
   { code: 'ru', label: 'Русский', flag: '🇷🇺' },
@@ -24,6 +30,8 @@ export default function LoginScreen() {
   
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'light'];
 
   const handleSendCode = () => {
     if (phone.length < 7) return;
@@ -36,86 +44,114 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{ flex: 1 }}>
           <Portal>
-            <Modal visible={visibleModal} onDismiss={() => setVisibleModal(false)} contentContainerStyle={styles.modalContent}>
-              <Text variant="titleMedium" style={styles.modalTitle}>Выберите код страны</Text>
+            <Modal 
+              visible={visibleModal} 
+              onDismiss={() => setVisibleModal(false)} 
+              contentContainerStyle={[styles.modalContent, { backgroundColor: theme.surface }]}
+            >
+              <Text variant="titleMedium" style={[styles.modalTitle, { color: theme.text }]}>
+                {t('selectCountry', 'Select Country Code')}
+              </Text>
               {COUNTRY_CODES.map((c) => (
                 <List.Item
                   key={c.code}
                   title={`${c.flag}  ${c.code}`}
+                  titleStyle={{ color: theme.text }}
                   onPress={() => {
                     setSelectedCode(c);
                     setVisibleModal(false);
                   }}
                   style={styles.modalItem}
-                  right={props => selectedCode.code === c.code ? <List.Icon {...props} icon="check" color="#0066CC"/> : null}
+                  right={props => selectedCode.code === c.code ? <List.Icon {...props} icon="check" color={theme.primary}/> : null}
                 />
               ))}
             </Modal>
           </Portal>
 
-          <View style={styles.langContainer}>
+          <Animated.View entering={FadeInUp.delay(200).duration(500)} style={styles.headerContainer}>
+            <View style={styles.logoPlaceholder}>
+               <View style={[styles.logoCircle, { backgroundColor: theme.primary }]}>
+                  <Text style={styles.logoText}>M</Text>
+               </View>
+            </View>
+          </Animated.View>
+
+          <Animated.View entering={FadeInDown.delay(400).duration(500)} style={styles.langContainer}>
             {LANGUAGES.map((lang) => (
               <TouchableOpacity 
                 key={lang.code} 
                 style={[
                   styles.langButton, 
-                  i18n.language === lang.code && styles.langButtonActive
+                  i18n.language === lang.code ? 
+                    { backgroundColor: theme.primary, borderColor: theme.primary } : 
+                    { backgroundColor: theme.surface, borderColor: theme.border }
                 ]}
                 onPress={() => changeLanguage(lang.code)}
               >
                 <Text style={styles.flag}>{lang.flag}</Text>
                 <Text style={[
                   styles.langText,
-                  i18n.language === lang.code && styles.langTextActive
+                  { color: i18n.language === lang.code ? '#FFF' : theme.textSecondary }
                 ]}>
                   {lang.label}
                 </Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </Animated.View>
 
           <View style={styles.content}>
-            <Text variant="headlineMedium" style={styles.title}>{t('welcome')}</Text>
-            <Text variant="bodyLarge" style={styles.subtitle}>
-              {t('enterPhone')}
-            </Text>
+            <Animated.View entering={FadeInDown.delay(600).duration(500)}>
+              <Text variant="headlineMedium" style={[styles.title, { color: theme.text }]}>
+                {t('welcome')}
+              </Text>
+              <Text variant="bodyLarge" style={[styles.subtitle, { color: theme.textSecondary }]}>
+                {t('enterPhone')}
+              </Text>
+            </Animated.View>
 
-            <View style={styles.phoneRow}>
+            <Animated.View entering={FadeInDown.delay(800).duration(500)} style={styles.phoneRow}>
                <TouchableOpacity 
                   onPress={() => setVisibleModal(true)}
-                  style={styles.codeSelector}
+                  style={[
+                    styles.codeSelector, 
+                    { 
+                      backgroundColor: theme.surface, 
+                      borderColor: theme.border,
+                    }
+                  ]}
                 >
-                   <Text style={{fontSize: 18}}>{selectedCode.flag} {selectedCode.code}</Text>
+                   <Text style={{fontSize: 16, color: theme.text, fontWeight: '600'}}>
+                     {selectedCode.flag} {selectedCode.code}
+                   </Text>
                 </TouchableOpacity>
 
-                <TextInput
-                  label={t('phoneLabel')}
-                  value={phone}
-                  onChangeText={setPhone}
-                  keyboardType="phone-pad"
-                  mode="outlined"
-                  style={styles.phoneInput}
-                  placeholder={selectedCode.mask}
-                />
-            </View>
+                <View style={{ flex: 1 }}>
+                  <CustomInput
+                    value={phone}
+                    onChangeText={setPhone}
+                    keyboardType="phone-pad"
+                    placeholder={selectedCode.mask}
+                    style={{ marginBottom: 0 }}
+                  />
+                </View>
+            </Animated.View>
             
-            <HelperText type="info" visible={true}>
-              {t('sendCodeInfo')}
-            </HelperText>
+            <Animated.View entering={FadeInDown.delay(1000).duration(500)}>
+              <Text style={[styles.infoText, { color: theme.textSecondary }]}>
+                {t('sendCodeInfo')}
+              </Text>
 
-            <Button 
-              mode="contained" 
-              onPress={handleSendCode} 
-              style={styles.button}
-              contentStyle={styles.buttonContent}
-              disabled={phone.length < 5}
-            >
-              {t('continue')}
-            </Button>
+              <PrimaryButton 
+                title={t('continue')} 
+                onPress={handleSendCode} 
+                disabled={phone.length < 5}
+                style={styles.button}
+              />
+            </Animated.View>
           </View>
         </View>
       </TouchableWithoutFeedback>
@@ -126,93 +162,113 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+  },
+  headerContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  logoPlaceholder: {
+    marginBottom: 10,
+  },
+  logoCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  logoText: {
+    color: 'white',
+    fontSize: 32,
+    fontWeight: 'bold',
   },
   langContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingTop: 20,
-    paddingBottom: 10,
+    paddingVertical: 20,
     gap: 12,
   },
   langButton: {
     alignItems: 'center',
-    padding: 8,
-    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#eee',
-    minWidth: 80,
-  },
-  langButtonActive: {
-    borderColor: '#0066CC',
-    backgroundColor: '#F0F7FF',
+    minWidth: 85,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   flag: {
-    fontSize: 24,
+    fontSize: 20,
     marginBottom: 4,
   },
   langText: {
     fontSize: 12,
-    color: '#666',
-  },
-  langTextActive: {
-    color: '#0066CC',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   content: {
     padding: 24,
     flex: 1,
     justifyContent: 'center',
-    marginTop: -50, // Offset for balance
+    marginTop: -40,
   },
   title: {
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontWeight: '800',
+    marginBottom: 12,
     textAlign: 'center',
+    fontSize: 28,
   },
   subtitle: {
     textAlign: 'center',
-    marginBottom: 32,
-    color: '#666',
+    marginBottom: 40,
+    fontSize: 16,
+    lineHeight: 24,
   },
   phoneRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
+    gap: 12,
+    marginBottom: 24,
   },
   codeSelector: {
     justifyContent: 'center',
     alignItems: 'center',
     height: 56,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#79747E',
-    borderRadius: 4,
-    backgroundColor: '#fff',
-    marginTop: 6, // Align with TextInput visually
+    borderRadius: 16,
   },
-  phoneInput: {
-    flex: 1,
+  infoText: {
+    textAlign: 'center',
+    fontSize: 13,
+    marginBottom: 24,
+    opacity: 0.7,
   },
   button: {
-    marginTop: 24,
-  },
-  buttonContent: {
-    paddingVertical: 8,
+    marginTop: 8,
   },
   modalContent: {
-    backgroundColor: 'white',
-    padding: 20,
-    margin: 20,
-    borderRadius: 8,
+    padding: 24,
+    margin: 24,
+    borderRadius: 24,
+    elevation: 5,
   },
   modalTitle: {
-    marginBottom: 10,
+    marginBottom: 16,
     textAlign: 'center',
     fontWeight: 'bold',
   },
   modalItem: {
-    paddingVertical: 0,
+    paddingVertical: 4,
+    borderRadius: 12,
   }
 });

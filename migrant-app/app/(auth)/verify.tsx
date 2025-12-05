@@ -1,19 +1,27 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Text, TextInput, Button, ActivityIndicator } from 'react-native-paper';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text } from 'react-native-paper';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useUserStore } from '../../store/userStore';
 import { useTranslation } from 'react-i18next';
 import api from '../../services/api';
+
+import Colors from '@/constants/Colors';
+import PrimaryButton from '@/components/PrimaryButton';
+import CustomInput from '@/components/CustomInput';
+import { useColorScheme } from '@/components/useColorScheme';
 
 export default function VerifyScreen() {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const { phone } = useLocalSearchParams<{ phone: string }>();
   const router = useRouter();
-  const { login } = useUserStore(); // Destructure login
+  const { login } = useUserStore(); 
   const { t } = useTranslation();
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'light'];
 
   const handleVerify = async () => {
     if (!phone) {
@@ -21,7 +29,6 @@ export default function VerifyScreen() {
       return;
     }
 
-    // Mock Verification: 0000 passes
     if (code !== '0000') {
       alert('Invalid Code (use 0000)');
       return;
@@ -29,22 +36,12 @@ export default function VerifyScreen() {
 
     setLoading(true);
     try {
-        // Call Backend to get/login user
         const response = await api.post('/users/login', {
             phone: phone
         });
 
-        // Backend returns User object
         const userData = response.data;
-        
-        // Update store
         login(userData);
-
-        // Check if we should skip onboarding
-        // The store 'login' logic now sets hasCompletedOnboarding based on fields.
-        // However, getting the *updated* state immediately from Zustand outside a component render cycle 
-        // can be tricky if we rely on the hook.
-        // Simpler to just check the data directly here for routing.
         
         const isProfileFilled = !!(userData.first_name && userData.last_name && userData.first_name !== 'Test');
 
@@ -57,9 +54,6 @@ export default function VerifyScreen() {
     } catch (error: any) {
         console.error(error);
         if (error.response && error.response.status === 404) {
-             // If user not found, normally we register them. 
-             // Since we are MVP, let's auto-register or alert.
-             // Ideally: router.push('/(onboarding)/personal-info');
              alert('User not found.');
         } else {
             alert("Login failed. Check network/backend.");
@@ -70,42 +64,45 @@ export default function VerifyScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.content}>
-        <Text variant="headlineSmall" style={styles.title}>{t('verifyTitle')}</Text>
-        <Text variant="bodyMedium" style={styles.subtitle}>
-          {t('verifyText')} {phone}
-        </Text>
+        <Animated.View entering={FadeInDown.duration(500).delay(200)}>
+            <Text variant="headlineSmall" style={[styles.title, { color: theme.text }]}>
+                {t('verifyTitle')}
+            </Text>
+            <Text variant="bodyMedium" style={[styles.subtitle, { color: theme.textSecondary }]}>
+            {t('verifyText')} {phone}
+            </Text>
+        </Animated.View>
 
-        <TextInput
-          label={t('verifyCodeLabel')}
-          value={code}
-          onChangeText={setCode}
-          keyboardType="number-pad"
-          mode="outlined"
-          style={styles.input}
-          placeholder="0000"
-          maxLength={4}
-        />
+        <Animated.View entering={FadeInDown.duration(500).delay(400)}>
+            <CustomInput
+            placeholder="0000"
+            value={code}
+            onChangeText={setCode}
+            keyboardType="number-pad"
+            maxLength={4}
+            style={styles.input}
+            textAlign="center"
+            />
 
-        <Button 
-          mode="contained" 
-          onPress={handleVerify} 
-          style={styles.button}
-          contentStyle={styles.buttonContent}
-          loading={loading}
-          disabled={loading}
-        >
-          {t('login')}
-        </Button>
-        
-        <Button 
-          mode="text" 
-          onPress={() => router.back()} 
-          style={{marginTop: 16}}
-        >
-          {t('changePhone')}
-        </Button>
+            <PrimaryButton 
+            title={t('login')} 
+            onPress={handleVerify} 
+            loading={loading}
+            disabled={loading || code.length < 4}
+            style={styles.button}
+            />
+            
+            <TouchableOpacity 
+            onPress={() => router.back()} 
+            style={styles.linkButton}
+            >
+            <Text style={{ color: theme.primary, fontWeight: '600' }}>
+                {t('changePhone')}
+            </Text>
+            </TouchableOpacity>
+        </Animated.View>
       </View>
     </SafeAreaView>
   );
@@ -114,31 +111,32 @@ export default function VerifyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   content: {
     padding: 24,
     flex: 1,
     justifyContent: 'center',
+    marginTop: -40,
   },
   title: {
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontWeight: '800',
+    marginBottom: 12,
     textAlign: 'center',
+    fontSize: 26,
   },
   subtitle: {
     textAlign: 'center',
-    marginBottom: 32,
-    color: '#666',
+    marginBottom: 40,
+    fontSize: 16,
   },
   input: {
-    marginBottom: 16,
-    textAlign: 'center',
+    marginBottom: 8,
   },
   button: {
-    marginTop: 8,
+    marginTop: 16,
   },
-  buttonContent: {
-    paddingVertical: 8,
+  linkButton: {
+    marginTop: 24,
+    alignItems: 'center',
   }
 });

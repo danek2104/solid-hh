@@ -1,25 +1,32 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTheme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
+import Colors from '@/constants/Colors';
+import { useColorScheme } from '@/components/useColorScheme';
 
 export default function TabLayout() {
-  const theme = useTheme();
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'light'];
   const { t } = useTranslation();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: theme.colors.primary,
+        tabBarActiveTintColor: theme.tabIconSelected,
+        tabBarInactiveTintColor: theme.tabIconDefault,
         headerShown: false,
         tabBarStyle: {
+            backgroundColor: theme.surface,
+            borderTopColor: theme.border,
             paddingBottom: 5,
             height: 60,
+            borderTopWidth: 1,
         },
         tabBarLabelStyle: {
             fontSize: 12,
             marginBottom: 5,
+            fontWeight: '600',
         }
       }}>
       <Tabs.Screen
@@ -43,7 +50,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <MaterialCommunityIcons name="tools" size={28} color={color} />,
         }}
       />
-      {/* Hiding index if it exists or redirecting */}
       <Tabs.Screen name="index" options={{ href: null }} /> 
     </Tabs>
   );
