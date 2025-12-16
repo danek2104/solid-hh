@@ -1,0 +1,29 @@
+-- Add missing columns to users table
+ALTER TABLE users ADD COLUMN IF NOT EXISTS patronymic VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS citizenship VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS passport_series VARCHAR(20);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS passport_number VARCHAR(20);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS company_name VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS company_description TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS website VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS city VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS has_migration_card BOOLEAN DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS has_patent BOOLEAN DEFAULT FALSE;
+
+-- Create user_languages table
+CREATE TABLE IF NOT EXISTS user_languages (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    language_name VARCHAR(100) NOT NULL,
+    level VARCHAR(50) NOT NULL, -- beginner, intermediate, fluent
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create user_skills table
+CREATE TABLE IF NOT EXISTS user_skills (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    skill_name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

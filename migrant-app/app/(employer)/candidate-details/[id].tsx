@@ -68,7 +68,7 @@ export default function CandidateProfileScreen() {
       setSavingNotes(true);
       try {
           await api.put(`/applications/${applicationId}/notes`, { notes });
-          Alert.alert(t('success'), t('notesSaved') || "Notes saved");
+          Alert.alert(t('success'), t('notesSaved'));
       } catch (error) {
           console.error(error);
           Alert.alert(t('error'), "Failed to save notes");
@@ -148,7 +148,7 @@ export default function CandidateProfileScreen() {
                     </Text>
                     <Ionicons name="location-outline" size={14} color={theme.textSecondary} />
                     <Text style={{ marginLeft: 4, color: theme.textSecondary, fontSize: 13 }}>
-                        {candidate.city || t('locationNotSet') || "Moscow"}
+                        {candidate.city || t('locationNotSet')}
                     </Text>
                 </View>
             </View>

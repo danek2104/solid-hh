@@ -2,10 +2,42 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
+// Helper function to resolve skill IDs from names (and create new ones)
+async function resolveSkillIds(skillNames) {
+    const ids = [];
+    if (!skillNames || !Array.isArray(skillNames)) return ids;
+
+    for (const name of skillNames) {
+        if (!name) continue;
+        // Check if exists
+        let res = await db.query('SELECT id FROM skills WHERE name = $1', [name]);
+        if (res.rows.length > 0) {
+            ids.push(res.rows[0].id);
+        } else {
+            // Create
+            res = await db.query('INSERT INTO skills (name) VALUES ($1) RETURNING id', [name]);
+            ids.push(res.rows[0].id);
+        }
+    }
+    return ids;
+}
+
 // Get all jobs
 router.get('/', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM jobs WHERE is_active = true ORDER BY created_at DESC');
+    const result = await db.query(`
+      SELECT j.*, 
+             COALESCE(
+               (SELECT json_agg(s.name) 
+                FROM job_skills js 
+                JOIN skills s ON js.skill_id = s.id
+                WHERE js.job_id = j.id), 
+               '[]'::json
+             ) as skills
+      FROM jobs j 
+      WHERE j.is_active = true 
+      ORDER BY j.created_at DESC
+    `);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -15,14 +47,32 @@ router.get('/', async (req, res) => {
 
 // Create a new job
 router.post('/', async (req, res) => {
-  const { title, description, salary_min, salary_max, location, employer_id } = req.body;
+  const { title, description, salary_min, salary_max, location, employer_id, skills } = req.body;
+  
   try {
+    await db.query('BEGIN');
+
     const result = await db.query(
       'INSERT INTO jobs (title, description, salary_min, salary_max, location, employer_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
       [title, description, salary_min, salary_max, location, employer_id]
     );
-    res.status(201).json(result.rows[0]);
+    const job = result.rows[0];
+
+    // Insert Skills
+    if (skills && Array.isArray(skills)) {
+        const skillIds = await resolveSkillIds(skills);
+        for (const skillId of skillIds) {
+            await db.query(
+                'INSERT INTO job_skills (job_id, skill_id) VALUES ($1, $2)',
+                [job.id, skillId]
+            );
+        }
+    }
+    
+    await db.query('COMMIT');
+    res.status(201).json(job);
   } catch (err) {
+    await db.query('ROLLBACK');
     console.error(err);
     res.status(500).json({ error: 'Error creating job' });
   }
@@ -32,7 +82,15 @@ router.post('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT j.*, COUNT(a.id)::int as application_count 
+      `SELECT j.*, 
+              COUNT(a.id)::int as application_count,
+              COALESCE(
+                (SELECT json_agg(s.name) 
+                 FROM job_skills js 
+                 JOIN skills s ON js.skill_id = s.id
+                 WHERE js.job_id = j.id), 
+                '[]'::json
+              ) as skills
        FROM jobs j 
        LEFT JOIN applications a ON j.id = a.job_id 
        WHERE j.id = $1 
@@ -53,7 +111,15 @@ router.get('/:id', async (req, res) => {
 router.get('/employer/:employerId', async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT j.*, COUNT(a.id)::int as application_count 
+      `SELECT j.*, 
+              COUNT(a.id)::int as application_count,
+              COALESCE(
+                (SELECT json_agg(s.name) 
+                 FROM job_skills js 
+                 JOIN skills s ON js.skill_id = s.id
+                 WHERE js.job_id = j.id), 
+                '[]'::json
+              ) as skills
        FROM jobs j 
        LEFT JOIN applications a ON j.id = a.job_id 
        WHERE j.employer_id = $1 
@@ -70,10 +136,11 @@ router.get('/employer/:employerId', async (req, res) => {
 
 // Update a job (Edit or Toggle Status)
 router.put('/:id', async (req, res) => {
-  const { title, description, salary_min, salary_max, location, is_active } = req.body;
+  const { title, description, salary_min, salary_max, location, is_active, skills } = req.body;
   const id = req.params.id;
 
   try {
+    await db.query('BEGIN');
     const result = await db.query(
       `UPDATE jobs 
        SET title = COALESCE($1, title),
@@ -88,10 +155,29 @@ router.put('/:id', async (req, res) => {
     );
 
     if (result.rows.length === 0) {
+      await db.query('ROLLBACK');
       return res.status(404).json({ error: 'Job not found' });
     }
+
+    // Update Skills if provided
+    if (skills !== undefined && Array.isArray(skills)) {
+         // Clear existing
+         await db.query('DELETE FROM job_skills WHERE job_id = $1', [id]);
+         
+         // Add new
+         const skillIds = await resolveSkillIds(skills);
+         for (const skillId of skillIds) {
+            await db.query(
+                'INSERT INTO job_skills (job_id, skill_id) VALUES ($1, $2)',
+                [id, skillId]
+            );
+         }
+    }
+    
+    await db.query('COMMIT');
     res.json(result.rows[0]);
   } catch (err) {
+    await db.query('ROLLBACK');
     console.error(err);
     res.status(500).json({ error: 'Error updating job' });
   }

@@ -31,13 +31,14 @@ export default function EmployerProfileScreen() {
   const { t, i18n } = useTranslation();
   
   const safeUser = user || {
-      firstName: 'Employer',
+      firstName: '', // No longer used for display in main header
       lastName: '',
       phone: '',
-      companyName: '',
+      companyName: 'Company',
       companyDescription: '',
       website: '',
       avatarUrl: null,
+      email: '',
   };
 
   const [isEditing, setIsEditing] = useState(false);
@@ -47,9 +48,9 @@ export default function EmployerProfileScreen() {
     try {
         if (user?.id) {
             const apiData = {
-                first_name: tempUser.firstName,
-                last_name: tempUser.lastName,
+                // Ensure we don't accidentally wipe names if they exist, but we don't edit them here
                 phone: tempUser.phone,
+                email: tempUser.email,
                 company_name: tempUser.companyName,
                 company_description: tempUser.companyDescription,
                 website: tempUser.website,
@@ -58,12 +59,13 @@ export default function EmployerProfileScreen() {
             
             // Map response back to camelCase and update store
             const updatedUser = {
-                firstName: res.data.first_name,
-                lastName: res.data.last_name,
                 phone: res.data.phone,
+                email: res.data.email,
                 companyName: res.data.company_name,
                 companyDescription: res.data.company_description,
                 website: res.data.website,
+                firstName: res.data.first_name, // Keep syncing these even if hidden
+                lastName: res.data.last_name,
             };
             updateProfile(updatedUser);
         } else {
@@ -146,7 +148,7 @@ export default function EmployerProfileScreen() {
                     <Image source={{ uri: safeUser.avatarUrl }} style={styles.avatarImage} />
                 ) : (
                     <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
-                        <Text style={styles.avatarText}>{safeUser.firstName?.[0] || 'E'}</Text>
+                        <Text style={styles.avatarText}>{safeUser.companyName?.[0] || 'C'}</Text>
                     </View>
                 )}
                 <View style={[styles.editBadge, { backgroundColor: theme.secondary }]}>
@@ -156,10 +158,10 @@ export default function EmployerProfileScreen() {
 
             <View style={styles.headerText}>
                 <Text variant="headlineSmall" style={{ fontWeight: 'bold', color: theme.text }}>
-                    {safeUser.firstName} {safeUser.lastName}
+                    {safeUser.companyName}
                 </Text>
                 <Text variant="bodyMedium" style={{ color: theme.textSecondary }}>
-                    {safeUser.companyName || t('companyName')}
+                    {safeUser.email}
                 </Text>
             </View>
             <TouchableOpacity onPress={handleLogout} style={[styles.logoutBtn, { backgroundColor: theme.secondary }]}>
@@ -173,7 +175,7 @@ export default function EmployerProfileScreen() {
             style={styles.card}
         >
             <View style={styles.sectionHeader}>
-                <Text variant="titleMedium" style={{ fontWeight: 'bold', color: theme.text }}>{t('personalInfo')}</Text>
+                <Text variant="titleMedium" style={{ fontWeight: 'bold', color: theme.text }}>{t('companyInfo')}</Text>
                 <TouchableOpacity onPress={() => isEditing ? handleSave() : setIsEditing(!isEditing)}>
                     <Text style={{ color: theme.primary, fontWeight: '600' }}>
                         {isEditing ? t('save') : t('change')}
@@ -182,44 +184,33 @@ export default function EmployerProfileScreen() {
             </View>
 
             <CustomInput
-                label={t('firstName')}
-                value={isEditing ? tempUser.firstName : safeUser.firstName}
-                onChangeText={t => setTempUser({...tempUser, firstName: t})}
-                editable={isEditing}
-                style={{ marginBottom: 12 }}
-            />
-            <CustomInput
-                label={t('lastName')}
-                value={isEditing ? tempUser.lastName : safeUser.lastName}
-                onChangeText={t => setTempUser({...tempUser, lastName: t})}
-                editable={isEditing}
-                style={{ marginBottom: 12 }}
-            />
-            <CustomInput
-                label={t('phone')}
-                value={isEditing ? tempUser.phone : safeUser.phone}
-                onChangeText={t => setTempUser({...tempUser, phone: t})}
-                editable={isEditing} // Phone often read-only, but keeping editable for MVP
-                style={{ marginBottom: 0 }}
-            />
-        </Card>
-
-        <Card 
-            entering={FadeInDown.delay(400)}
-            style={styles.card}
-        >
-            <View style={styles.sectionHeader}>
-                <Text variant="titleMedium" style={{ fontWeight: 'bold', color: theme.text }}>{t('companyInfo')}</Text>
-            </View>
-             <CustomInput
                 label={t('companyName')}
                 value={isEditing ? tempUser.companyName : safeUser.companyName}
                 onChangeText={t => setTempUser({...tempUser, companyName: t})}
                 editable={isEditing}
                 style={{ marginBottom: 12 }}
             />
+            
             <CustomInput
-                label={t('description') || "Description"}
+                label={t('email')}
+                value={isEditing ? tempUser.email : safeUser.email}
+                onChangeText={t => setTempUser({...tempUser, email: t})}
+                editable={isEditing}
+                keyboardType="email-address"
+                style={{ marginBottom: 12 }}
+            />
+
+            <CustomInput
+                label={t('phone')}
+                value={isEditing ? tempUser.phone : safeUser.phone}
+                onChangeText={t => setTempUser({...tempUser, phone: t})}
+                editable={isEditing} 
+                keyboardType="phone-pad"
+                style={{ marginBottom: 12 }}
+            />
+
+             <CustomInput
+                label={t('description')}
                 value={isEditing ? tempUser.companyDescription : safeUser.companyDescription}
                 onChangeText={t => setTempUser({...tempUser, companyDescription: t})}
                 editable={isEditing}
@@ -228,7 +219,7 @@ export default function EmployerProfileScreen() {
                 style={{ marginBottom: 12, height: 80, textAlignVertical: 'top' }}
             />
              <CustomInput
-                label={t('website') || "Website"}
+                label={t('website')}
                 value={isEditing ? tempUser.website : safeUser.website}
                 onChangeText={t => setTempUser({...tempUser, website: t})}
                 editable={isEditing}
@@ -237,16 +228,7 @@ export default function EmployerProfileScreen() {
             />
         </Card>
 
-        <Animated.View entering={FadeInDown.delay(500)}>
-            <PrimaryButton 
-                title={t('resetDemo')}
-                onPress={handleReset} 
-                loading={resetting}
-                variant="outline"
-                style={{ marginTop: 24, borderColor: theme.error }}
-                textStyle={{ color: theme.error }}
-            />
-        </Animated.View>
+        {/* Removed Reset Demo Button */}
 
         <Animated.View entering={FadeInDown.delay(600)} style={styles.langContainer}>
             {LANGUAGES.map((lang) => (

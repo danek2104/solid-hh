@@ -14,6 +14,7 @@ process.on('unhandledRejection', (reason, promise) => {
 const usersRoutes = require('./routes/users');
 const jobsRoutes = require('./routes/jobs');
 const applicationsRoutes = require('./routes/applications');
+const skillsRoutes = require('./routes/skills');
 
 const PORT = process.env.PORT || 3000;
 
@@ -33,6 +34,7 @@ app.use((req, res, next) => {
 app.use('/api/users', usersRoutes);
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/applications', applicationsRoutes);
+app.use('/api/skills', skillsRoutes);
 
 // Health check
 app.get('/', (req, res) => {

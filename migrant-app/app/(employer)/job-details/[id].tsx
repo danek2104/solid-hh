@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
-import { Text, Switch, Badge } from 'react-native-paper';
+import { Text, Switch, Badge, Chip, IconButton } from 'react-native-paper';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import api from '@/services/api';
 import Colors from '@/constants/Colors';
@@ -13,11 +13,12 @@ import CustomInput from '@/components/CustomInput';
 import Card from '@/components/Card';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { JobDetailsSkeleton } from '@/components/LoadingSkeletons';
+import { getLocalizedSkill, SKILL_TRANSLATIONS } from '@/constants/dataTranslations';
 
 export default function JobDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
 
@@ -26,6 +27,11 @@ export default function JobDetailsScreen() {
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   
+  // Skills State
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [customSkill, setCustomSkill] = useState('');
+  const [backendSkills, setBackendSkills] = useState<string[]>([]);
+
   // Edit Form State
   const [formData, setFormData] = useState({
     title: '',
@@ -37,6 +43,7 @@ export default function JobDetailsScreen() {
 
   useEffect(() => {
     fetchJob();
+    fetchSkills();
   }, [id]);
 
   const fetchJob = async () => {
@@ -50,6 +57,10 @@ export default function JobDetailsScreen() {
         location: res.data.location,
         description: res.data.description,
       });
+      // Parse skills safely
+      if (res.data.skills && Array.isArray(res.data.skills)) {
+          setSelectedSkills(res.data.skills);
+      }
     } catch (error) {
       console.error(error);
       Alert.alert(t('error'), t('failedToLoadJob'));
@@ -57,6 +68,16 @@ export default function JobDetailsScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchSkills = async () => {
+      try {
+          const res = await api.get('/skills');
+          const names = res.data.map((s: any) => s.name);
+          setBackendSkills(names);
+      } catch (error) {
+          console.error("Failed to fetch skills", error);
+      }
   };
 
   const handleSave = async () => {
@@ -76,6 +97,7 @@ export default function JobDetailsScreen() {
         ...formData,
         salary_min: Number(formData.salary_min),
         salary_max: Number(formData.salary_max),
+        skills: selectedSkills
       });
       // Preserve application_count which is not returned by PUT usually, or ensure it is
       setJob({ ...updatedJob.data, application_count: job.application_count });
@@ -124,13 +146,37 @@ export default function JobDetailsScreen() {
     );
   };
 
+  // Skill Helpers
+  const toggleSkill = (skill: string) => {
+      if (selectedSkills.includes(skill)) {
+          setSelectedSkills(selectedSkills.filter(s => s !== skill));
+      } else {
+          setSelectedSkills([...selectedSkills, skill]);
+      }
+  };
+
+  const addCustomSkill = () => {
+      if (customSkill.trim()) {
+          const newSkill = customSkill.trim();
+          if (!selectedSkills.includes(newSkill)) {
+              setSelectedSkills([...selectedSkills, newSkill]);
+          }
+          setCustomSkill('');
+      }
+  };
+
+  const predefinedSkills = Object.keys(SKILL_TRANSLATIONS);
+  const commonExtraSkills = [
+      "Ответственность", "Аккуратность", "Пунктуальность",
+      "Знание города", "Быстрота", "Навигатор", "Водительские права B",
+      "Стаж вождения 3+", "Санкнижка", "Выносливость",
+      "Без опыта", "Внимательность", "Обучаемость", "Шитье",
+      "Опыт 1 год", "Вежливость", "Русский язык", "Трудолюбие", "Без вредных привычек"
+  ];
+  const uniqueSuggestions = Array.from(new Set([...backendSkills, ...predefinedSkills, ...commonExtraSkills]));
+
+
   const navigateToCandidates = () => {
-      // Navigate to candidates tab with this job selected
-      // We can use a global store or params. For now, we'll just go to the tab.
-      // Ideally, we pass a param to filter by this job.
-      // Since tabs don't easily accept params in Expo Router v2/v3 without strict typing, 
-      // we might rely on the store if we implemented it, or just navigate.
-      // For this MVP, we will navigate to candidates.
       router.push('/(employer)/(tabs)/candidates');
   };
 
@@ -198,7 +244,7 @@ export default function JobDetailsScreen() {
                     <View style={styles.row}>
                         <Ionicons name="people" size={20} color={theme.textSecondary} />
                         <Text style={{ marginLeft: 8, color: theme.text, fontSize: 16 }}>
-                            {t('applications') || "Applications"}
+                            {t('applications')}
                         </Text>
                     </View>
                     <View style={styles.row}>
@@ -223,27 +269,30 @@ export default function JobDetailsScreen() {
                 />
 
                 <View style={styles.rowInputs}>
-                    <CustomInput
-                        label={t('salaryMin')}
-                        value={isEditing ? formData.salary_min : String(job.salary_min)}
-                        onChangeText={(text) => {
-                            if (/^\d*$/.test(text)) setFormData({ ...formData, salary_min: text })
-                        }}
-                        editable={isEditing}
-                        keyboardType="numeric"
-                        style={isEditing ? styles.input : styles.readOnlyInput}
-                    />
-                     <CustomInput
-                        label={t('salaryMax')}
-                        value={isEditing ? formData.salary_max : String(job.salary_max)}
-                        onChangeText={(text) => {
-                            if (/^\d*$/.test(text)) setFormData({ ...formData, salary_max: text })
-                        }}
-                        editable={isEditing}
-                        keyboardType="numeric"
-                        containerStyle={{ flex: 1 }}
-                        style={isEditing ? styles.input : styles.readOnlyInput}
-                    />
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                        <CustomInput
+                            label={t('minSalary')}
+                            value={isEditing ? formData.salary_min : String(job.salary_min)}
+                            onChangeText={(text) => {
+                                if (/^\d*$/.test(text)) setFormData({ ...formData, salary_min: text })
+                            }}
+                            editable={isEditing}
+                            keyboardType="numeric"
+                            style={isEditing ? styles.input : styles.readOnlyInput}
+                        />
+                    </View>
+                    <View style={{ flex: 1, marginLeft: 8 }}>
+                        <CustomInput
+                            label={t('maxSalary')}
+                            value={isEditing ? formData.salary_max : String(job.salary_max)}
+                            onChangeText={(text) => {
+                                if (/^\d*$/.test(text)) setFormData({ ...formData, salary_max: text })
+                            }}
+                            editable={isEditing}
+                            keyboardType="numeric"
+                            style={isEditing ? styles.input : styles.readOnlyInput}
+                        />
+                    </View>
                 </View>
 
                 <CustomInput
@@ -253,6 +302,79 @@ export default function JobDetailsScreen() {
                     editable={isEditing}
                     style={isEditing ? styles.input : styles.readOnlyInput}
                 />
+            </Card>
+        </Animated.View>
+
+        {/* Skills Section */}
+        <Animated.View entering={FadeInDown.delay(250)}>
+            <Card style={styles.card}>
+                <Text variant="titleMedium" style={{ fontWeight: 'bold', marginBottom: 12, color: theme.text }}>
+                    {t('skills')}
+                </Text>
+                
+                {/* Selected Skills List */}
+                <View style={styles.skillsContainer}>
+                    {selectedSkills.length === 0 && (
+                        <Text style={{ color: theme.textSecondary, marginBottom: 8 }}>
+                            {t('noSkills')}
+                        </Text>
+                    )}
+                    {selectedSkills.map((skill) => (
+                        <Chip 
+                            key={skill} 
+                            onClose={isEditing ? () => toggleSkill(skill) : undefined}
+                            style={{ marginBottom: 8, marginRight: 8, backgroundColor: isEditing ? theme.secondary : theme.surface, borderWidth: isEditing ? 0 : 1, borderColor: theme.border }}
+                            textStyle={{ color: isEditing ? theme.primary : theme.text }}
+                        >
+                            {getLocalizedSkill(skill, i18n.language)}
+                        </Chip>
+                    ))}
+                </View>
+
+                {/* Edit Mode: Add Custom & Suggestions */}
+                {isEditing && (
+                    <View style={{ marginTop: 16, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 16 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8, marginBottom: 16 }}>
+                             <View style={{ flex: 1 }}>
+                                <CustomInput
+                                    label={t('addCustomSkill')}
+                                    value={customSkill}
+                                    onChangeText={setCustomSkill}
+                                    placeholder={t('skillPlaceholder')}
+                                    style={{marginBottom: 0}}
+                                />
+                             </View>
+                             <TouchableOpacity 
+                                onPress={addCustomSkill} 
+                                style={{ 
+                                    backgroundColor: theme.primary, 
+                                    height: 56, 
+                                    width: 56, 
+                                    borderRadius: 16, 
+                                    justifyContent: 'center', 
+                                    alignItems: 'center',
+                                    marginBottom: 16 
+                                }}
+                             >
+                                 <MaterialCommunityIcons name="plus" size={28} color="white" />
+                             </TouchableOpacity>
+                        </View>
+
+                        <Text style={{ marginBottom: 12, fontWeight: '600', color: theme.text }}>{t('suggestedSkills')}</Text>
+                        <View style={styles.skillsContainer}>
+                            {uniqueSuggestions.filter(s => !selectedSkills.includes(s)).map((skill) => (
+                                <Chip 
+                                    key={skill} 
+                                    onPress={() => toggleSkill(skill)}
+                                    style={{ marginBottom: 8, marginRight: 8, backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border }}
+                                    textStyle={{ color: theme.text }}
+                                >
+                                    {getLocalizedSkill(skill, i18n.language)}
+                                </Chip>
+                            ))}
+                        </View>
+                    </View>
+                )}
             </Card>
         </Animated.View>
 
@@ -314,4 +436,8 @@ const styles = StyleSheet.create({
   readOnlyInput: { borderWidth: 0, backgroundColor: 'transparent', paddingHorizontal: 0 },
   divider: { height: 1, backgroundColor: '#E0E0E0', marginVertical: 12 },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 },
+  skillsContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+  }
 });

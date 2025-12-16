@@ -108,7 +108,7 @@ export default function PersonalInfoScreen() {
     let newErrors: Record<string, string> = {};
     if (!form.lastName.trim()) newErrors.lastName = t('requiredField');
     if (!form.firstName.trim()) newErrors.firstName = t('requiredField');
-    if (!form.patronymic.trim()) newErrors.patronymic = t('requiredField');
+    // if (!form.patronymic.trim()) newErrors.patronymic = t('requiredField'); // Optional
     if (!form.citizenship) newErrors.citizenship = t('citizenship');
     if (!form.passportSeries.trim()) newErrors.passportSeries = t('requiredField');
     if (!form.passportNumber.trim()) newErrors.passportNumber = t('requiredField');

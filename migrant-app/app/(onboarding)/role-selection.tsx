@@ -33,10 +33,13 @@ export default function RoleSelectionScreen() {
       // Update local store
       updateProfile({ role: selectedRole });
 
-      console.log('RoleSelection: Navigating to personal-info');
-      // Navigate to Personal Info for both roles to complete profile
-      // Using push to ensure we land on the correct screen
-      router.push('/(onboarding)/personal-info');
+      console.log('RoleSelection: Navigating to next screen');
+      // Navigate based on role
+      if (selectedRole === 'employer') {
+        router.push('/(onboarding)/company-info');
+      } else {
+        router.push('/(onboarding)/personal-info');
+      }
 
     } catch (error) {
       console.error('RoleSelection Error:', error);

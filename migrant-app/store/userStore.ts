@@ -13,6 +13,7 @@ export interface Job {
   is_active: boolean;
   created_at: string;
   employer_id: number;
+  skills?: string[]; // Added skills
 }
 
 export interface LanguageSkill {

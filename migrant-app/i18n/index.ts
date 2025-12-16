@@ -132,6 +132,20 @@ const resources = {
       companyInfo: 'Информация о компании',
       companyName: 'Название компании',
       fillCompanyData: 'Заполните данные о вашей организации',
+
+      documents: 'Документы',
+      passport: 'Паспорт',
+      migrationCard: 'Миграционная карта',
+      patent: 'Патент',
+      locationNotSet: 'Город не указан',
+      skills: 'Навыки',
+      noSkills: 'Навыки не указаны',
+
+      selectedSkills: 'Выбранные навыки',
+      noSkillsSelected: 'Навыки не выбраны',
+      addCustomSkill: 'Добавить свой навык',
+      suggestedSkills: 'Рекомендуемые навыки',
+      skillPlaceholder: 'Например: Photoshop',
       
       // Employer New
       jobDetails: 'Детали вакансии',
@@ -172,6 +186,10 @@ const resources = {
       createFirstJobDesc: 'Создайте свою первую вакансию, чтобы начать нанимать работников.',
       noCandidatesDesc: 'Ждите откликов на ваши вакансии.',
       applications: 'Заявки',
+
+      employerPendingMessage: 'Спасибо! Мы свяжемся с Вами в ближайшее время по указанной контактной информации',
+      backToLogin: 'Хорошо',
+      thankYou: 'Спасибо!',
     },
   },
   uz: {
@@ -299,6 +317,20 @@ const resources = {
       companyName: 'Kompaniya nomi',
       fillCompanyData: 'Tashkilotingiz haqida ma\'lumotlarni to\'ldiring',
 
+      documents: 'Hujjatlar',
+      passport: 'Pasport',
+      migrationCard: 'Migratsiya kartasi',
+      patent: 'Patent',
+      locationNotSet: 'Shahar ko\'rsatilmagan',
+      skills: 'Ko\'nikmalar',
+      noSkills: 'Ko\'nikmalar ko\'rsatilmagan',
+
+      selectedSkills: 'Tanlangan ko\'nikmalar',
+      noSkillsSelected: 'Ko\'nikmalar tanlanmagan',
+      addCustomSkill: 'O\'z ko\'nikmangizni qo\'shing',
+      suggestedSkills: 'Tavsiya etilgan ko\'nikmalar',
+      skillPlaceholder: 'Masalan: Photoshop',
+
       // Employer New
       jobDetails: 'Vakansiya tafsilotlari',
       editJob: 'Vakansiyani tahrirlash',
@@ -338,6 +370,10 @@ const resources = {
       createFirstJobDesc: 'Ishchilarni yollashni boshlash uchun birinchi vakansiyangizni yarating.',
       noCandidatesDesc: 'Vakansiyalaringizga arizalarni kuting.',
       applications: 'Arizalar',
+
+      employerPendingMessage: 'Rahmat! Biz siz bilan tez orada ko‘rsatilgan aloqa ma’lumotlari orqali bog‘lanamiz',
+      backToLogin: 'Yaxshi',
+      thankYou: 'Rahmat!',
     },
   },
   tj: {
@@ -465,6 +501,20 @@ const resources = {
       companyName: 'Номи ширкат',
       fillCompanyData: 'Маълумотро дар бораи ташкилоти худ пур кунед',
 
+      documents: 'Ҳуҷҷатҳо',
+      passport: 'Паспорт',
+      migrationCard: 'Корти муҳоҷират',
+      patent: 'Патент',
+      locationNotSet: 'Шаҳр нишон дода нашудааст',
+      skills: 'Малакаҳо',
+      noSkills: 'Малакаҳо нишон дода нашудаанд',
+
+      selectedSkills: 'Малакаҳои интихобшуда',
+      noSkillsSelected: 'Малакаҳо интихоб нашудаанд',
+      addCustomSkill: 'Малакаи худро илова кунед',
+      suggestedSkills: 'Малакаҳои тавсияшаванда',
+      skillPlaceholder: 'Масалан: Photoshop',
+
       // Employer New
       jobDetails: 'Тафсилоти вакансия',
       editJob: 'Таҳрири вакансия',
@@ -504,6 +554,10 @@ const resources = {
       createFirstJobDesc: 'Аввалин вакансияи худро эҷод кунед, то киро кардани коргаронро оғоз кунед.',
       noCandidatesDesc: 'Дархостҳоро ба вакансияҳои худ интизор шавед.',
       applications: 'Дархостҳо',
+
+      employerPendingMessage: 'Ташаккур! Мо бо шумо дар тамос хоҳем шуд',
+      backToLogin: 'Хуб',
+      thankYou: 'Ташаккур!',
     },
   },
 };

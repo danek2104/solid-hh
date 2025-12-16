@@ -107,14 +107,13 @@ export default function MyJobsScreen() {
         ) : (
             <>
                 {filteredJobs.length === 0 ? (
-                    <EmptyState 
-                        icon="briefcase-outline"
-                        title={t('noJobs')}
-                        description={t('createFirstJobDesc') || "Create your first vacancy to start hiring workers."}
-                        actionLabel={t('createJob') || "Create Job"}
-                        onAction={() => router.push('/(employer)/create-job')}
-                    />
-                ) : (
+                                            <EmptyState 
+                                                icon="briefcase-outline"
+                                                title={t('noJobs')}
+                                                description={t('createFirstJobDesc')}
+                                                actionLabel={t('createVacancy')}
+                                                onAction={() => router.push('/(employer)/create-job')}
+                                            />                ) : (
                     filteredJobs.map((job, index) => (
                         <TouchableOpacity 
                             key={job.id} 

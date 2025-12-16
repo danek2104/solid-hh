@@ -7,6 +7,7 @@ import { useUserStore, Job } from '../../store/userStore';
 import { useTranslation } from 'react-i18next';
 import api from '../../services/api';
 import { Ionicons } from '@expo/vector-icons';
+import { getLocalizedSkill } from '@/constants/dataTranslations';
 
 import Colors from '@/constants/Colors';
 import PrimaryButton from '@/components/PrimaryButton';
@@ -141,6 +142,19 @@ export default function JobsTab() {
                                 <Ionicons name="location-outline" size={16} color={theme.textSecondary} />
                                 <Text style={[styles.location, { color: theme.textSecondary }]}>{job.location}</Text>
                             </View>
+                            
+                            {/* Skills Tags */}
+                            {job.skills && job.skills.length > 0 && (
+                                <View style={styles.skillsContainer}>
+                                    {job.skills.map((skill, idx) => (
+                                        <View key={idx} style={[styles.skillTag, { backgroundColor: theme.secondary }]}>
+                                            <Text style={{ color: theme.primary, fontSize: 12 }}>
+                                                {getLocalizedSkill(skill, i18n.language)}
+                                            </Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            )}
 
                             <Text style={[styles.description, { color: theme.text }]} numberOfLines={3}>{job.description}</Text>
                             
@@ -259,6 +273,17 @@ const styles = StyleSheet.create({
       lineHeight: 20,
       marginBottom: 16,
       opacity: 0.8,
+  },
+  skillsContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginBottom: 12,
+  },
+  skillTag: {
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 8,
   },
   applyButton: {
       height: 44,
